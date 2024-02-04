@@ -1,0 +1,26 @@
+[bootstrap]
+main_collection = /example/main.collectionc
+render = /rendy/rendy.renderc
+
+[script]
+shared_state = 1
+
+[display]
+width = 960
+height = 540
+
+[android]
+input_method = HiddenInputField
+
+[project]
+title = Defold Rendy
+version = 1.0.0
+publisher = Klayton Kowalski
+developer = Klayton Kowalski
+
+[input]
+game_binding = /builtins/input/all.input_bindingc
+
+[library]
+include_dirs = rendy
+
