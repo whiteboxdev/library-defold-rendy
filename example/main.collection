@@ -13,6 +13,24 @@ instances {
     z: 0.0
     w: 1.0
   }
+  component_properties {
+    id: "script"
+    properties {
+      id: "viewport_y"
+      value: "0.5"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "viewport_width"
+      value: "0.5"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "viewport_height"
+      value: "0.5"
+      type: PROPERTY_TYPE_NUMBER
+    }
+  }
   scale3 {
     x: 1.0
     y: 1.0
@@ -32,6 +50,39 @@ instances {
     y: 0.0
     z: 0.0
     w: 1.0
+  }
+  component_properties {
+    id: "script"
+    properties {
+      id: "resize_mode_center"
+      value: "false"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "resize_mode_expand"
+      value: "true"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "viewport_x"
+      value: "0.5"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "viewport_y"
+      value: "0.5"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "viewport_width"
+      value: "0.5"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "viewport_height"
+      value: "0.5"
+      type: PROPERTY_TYPE_NUMBER
+    }
   }
   scale3 {
     x: 1.0
@@ -53,25 +104,28 @@ instances {
     z: 0.0
     w: 1.0
   }
-  scale3 {
-    x: 1.0
-    y: 1.0
-    z: 1.0
-  }
-}
-instances {
-  id: "rendy_bottom_right"
-  prototype: "/rendy/rendy.go"
-  position {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
+  component_properties {
+    id: "script"
+    properties {
+      id: "resize_mode_center"
+      value: "false"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "resize_mode_stretch"
+      value: "true"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "viewport_width"
+      value: "0.5"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "viewport_height"
+      value: "0.5"
+      type: PROPERTY_TYPE_NUMBER
+    }
   }
   scale3 {
     x: 1.0

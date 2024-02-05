@@ -37,9 +37,6 @@ local rendy = require "rendy.rendy"
 local message_set_view_projection = hash("set_view_projection")
 local message_window_resized = hash("window_resized")
 
--- { color = <vec4> }
-local message_set_clear_color = hash("set_clear_color")
-
 --------------------------------------------------------------------------------
 -- Variables
 --------------------------------------------------------------------------------
@@ -52,58 +49,58 @@ local clear_color = nil
 -- Local Functions
 --------------------------------------------------------------------------------
 
-local function apply_resize_mode_stretch(camera)
-	camera.viewport_pixel_x = rendy.window_width * camera.viewport_percent_x
-	camera.viewport_pixel_y = rendy.window_height * camera.viewport_percent_y
-	camera.viewport_pixel_width = rendy.window_width * camera.viewport_percent_width
-	camera.viewport_pixel_height = rendy.window_height * camera.viewport_percent_height
-	local left = -rendy.resolution_width * 0.5
-	local right = rendy.resolution_width * 0.5
-	local bottom = -rendy.resolution_height * 0.5
-	local top = rendy.resolution_height * 0.5
-	camera.projection_transform = vmath.matrix4_orthographic(left, right, bottom, top, camera.near_z, camera.far_z)
-end
-
-local function apply_resize_mode_expand(camera)
-	camera.viewport_pixel_x = rendy.window_width * camera.viewport_percent_x
-	camera.viewport_pixel_y = rendy.window_height * camera.viewport_percent_y
-	camera.viewport_pixel_width = rendy.window_width * camera.viewport_percent_width
-	camera.viewport_pixel_height = rendy.window_height * camera.viewport_percent_height
-	local left = -rendy.window_width * 0.5
-	local right = rendy.window_width * 0.5
-	local bottom = -rendy.window_height * 0.5
-	local top = rendy.window_height * 0.5
-	camera.projection_transform = vmath.matrix4_orthographic(left, right, bottom, top, camera.near_z, camera.far_z)
-end
-
 local function apply_resize_mode_center(camera)
 	local window_width_ratio = rendy.window_width / rendy.window_height
 	local window_height_ratio = rendy.window_height / rendy.window_width
-	local resolution_width_ratio = rendy.resolution_width / rendy.resolution_height
-	local resolution_height_ratio = rendy.resolution_height / rendy.resolution_width
-	local margin_width = window_width_ratio - resolution_width_ratio > 0 and (window_width_ratio - resolution_width_ratio) * rendy.window_height * camera.viewport_percent_width or 0
-	local margin_height = window_height_ratio - resolution_height_ratio > 0 and (window_height_ratio - resolution_height_ratio) * rendy.window_width * camera.viewport_percent_height or 0
-	camera.viewport_pixel_x = rendy.window_width * camera.viewport_percent_x + margin_width * 0.5
-	camera.viewport_pixel_y = rendy.window_height * camera.viewport_percent_y + margin_height * 0.5
-	camera.viewport_pixel_width = rendy.window_width * camera.viewport_percent_width - margin_width
-	camera.viewport_pixel_height = rendy.window_height * camera.viewport_percent_height - margin_height
-	local left = -rendy.resolution_width * 0.5
-	local right = rendy.resolution_width * 0.5
-	local bottom = -rendy.resolution_height * 0.5
-	local top = rendy.resolution_height * 0.5
-	camera.projection_transform = vmath.matrix4_orthographic(left, right, bottom, top, camera.near_z, camera.far_z)
+	local resolution_width_ratio = camera.resolution_width / camera.resolution_height
+	local resolution_height_ratio = camera.resolution_height / camera.resolution_width
+	local margin_width = window_width_ratio - resolution_width_ratio > 0 and (window_width_ratio - resolution_width_ratio) * rendy.window_height * camera.viewport_width or 0
+	local margin_height = window_height_ratio - resolution_height_ratio > 0 and (window_height_ratio - resolution_height_ratio) * rendy.window_width * camera.viewport_height or 0
+	camera.viewport_px = rendy.window_width * camera.viewport_x + margin_width * 0.5
+	camera.viewport_py = rendy.window_height * camera.viewport_y + margin_height * 0.5
+	camera.viewport_pw = rendy.window_width * camera.viewport_width - margin_width
+	camera.viewport_ph = rendy.window_height * camera.viewport_height - margin_height
+	local left = -camera.resolution_width * 0.5 * camera.zoom
+	local right = camera.resolution_width * 0.5 * camera.zoom
+	local bottom = -camera.resolution_height * 0.5 * camera.zoom
+	local top = camera.resolution_height * 0.5 * camera.zoom
+	camera.projection_transform = vmath.matrix4_orthographic(left, right, bottom, top, camera.z_min, camera.z_max)
+end
+
+local function apply_resize_mode_expand(camera)
+	camera.viewport_px = rendy.window_width * camera.viewport_x
+	camera.viewport_py = rendy.window_height * camera.viewport_y
+	camera.viewport_pw = rendy.window_width * camera.viewport_width
+	camera.viewport_ph = rendy.window_height * camera.viewport_height
+	local left = -rendy.window_width * 0.5 * camera.zoom
+	local right = rendy.window_width * 0.5 * camera.zoom
+	local bottom = -rendy.window_height * 0.5 * camera.zoom
+	local top = rendy.window_height * 0.5 * camera.zoom
+	camera.projection_transform = vmath.matrix4_orthographic(left, right, bottom, top, camera.z_min, camera.z_max)
+end
+
+local function apply_resize_mode_stretch(camera)
+	camera.viewport_px = rendy.window_width * camera.viewport_x
+	camera.viewport_py = rendy.window_height * camera.viewport_y
+	camera.viewport_pw = rendy.window_width * camera.viewport_width
+	camera.viewport_ph = rendy.window_height * camera.viewport_height
+	local left = -camera.resolution_width * 0.5 * camera.zoom
+	local right = camera.resolution_width * 0.5 * camera.zoom
+	local bottom = -camera.resolution_height * 0.5 * camera.zoom
+	local top = camera.resolution_height * 0.5 * camera.zoom
+	camera.projection_transform = vmath.matrix4_orthographic(left, right, bottom, top, camera.z_min, camera.z_max)
 end
 
 local function set_view_projection_callback(camera_url, view_transform)
 	for _, camera in pairs(rendy.cameras) do
-		if camera_url == camera.url then
+		if camera_url == camera.camera_url then
 			camera.view_transform = view_transform
-			if camera.resize_mode == rendy.resize_modes.stretch then
-				apply_resize_mode_stretch(camera)
-			elseif camera.resize_mode == rendy.resize_modes.expand then
-				apply_resize_mode_expand(camera)
-			elseif camera.resize_mode == rendy.resize_modes.center then
+			if camera.resize_mode_center then
 				apply_resize_mode_center(camera)
+			elseif camera.resize_mode_expand then
+				apply_resize_mode_expand(camera)
+			elseif camera.resize_mode_stretch then
+				apply_resize_mode_stretch(camera)
 			end
 		end
 	end
@@ -114,12 +111,8 @@ local function window_resized_callback()
 	rendy.window_height = render.get_window_height()
 end
 
-local function set_clear_color_callback(color)
-	clear_color = color
-end
-
 local function activate_camera(camera)
-	render.set_viewport(camera.viewport_pixel_x, camera.viewport_pixel_y, camera.viewport_pixel_width, camera.viewport_pixel_height)
+	render.set_viewport(camera.viewport_px, camera.viewport_py, camera.viewport_pw, camera.viewport_ph)
 	render.set_view(camera.view_transform)
 	render.set_projection(camera.projection_transform)
 end
@@ -130,12 +123,11 @@ end
 
 function init(self)
 	window_resized_callback()
-	rendy.set_resolution_size(render.get_width(), render.get_height())
 	predicates_tile = render.predicate({ hash("tile") })
-	local clear_color_red = sys.get_config_int("render.clear_color_red", 0)
-	local clear_color_green = sys.get_config_int("render.clear_color_green", 0)
-	local clear_color_blue = sys.get_config_int("render.clear_color_blue", 0)
-	local clear_color_alpha = sys.get_config_int("render.clear_color_alpha", 0)
+	local clear_color_red = sys.get_config_number("render.clear_color_red", 0)
+	local clear_color_green = sys.get_config_number("render.clear_color_green", 0)
+	local clear_color_blue = sys.get_config_number("render.clear_color_blue", 0)
+	local clear_color_alpha = sys.get_config_number("render.clear_color_alpha", 0)
 	clear_color = vmath.vector4(clear_color_red, clear_color_green, clear_color_blue, clear_color_alpha)
 end
 
@@ -158,7 +150,5 @@ function on_message(self, message_id, message, sender)
 		set_view_projection_callback(sender, message.view)
 	elseif message_id == message_window_resized then
 		window_resized_callback()
-	elseif message_id == message_set_clear_color then
-		set_clear_color_callback(message.color)
 	end
 end

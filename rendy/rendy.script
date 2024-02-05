@@ -1,0 +1,112 @@
+--------------------------------------------------------------------------------
+-- License
+--------------------------------------------------------------------------------
+
+-- Copyright (c) 2024 Klayton Kowalski
+
+-- This software is provided 'as-is', without any express or implied warranty.
+-- In no event will the authors be held liable for any damages arising from the use of this software.
+
+-- Permission is granted to anyone to use this software for any purpose,
+-- including commercial applications, and to alter it and redistribute it freely,
+-- subject to the following restrictions:
+
+-- 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software.
+--    If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+
+-- 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+
+-- 3. This notice may not be removed or altered from any source distribution.
+
+--------------------------------------------------------------------------------
+-- Information
+--------------------------------------------------------------------------------
+
+-- GitHub: https://github.com/klaytonkowalski/library-defold-rendy
+
+--------------------------------------------------------------------------------
+-- Dependencies
+--------------------------------------------------------------------------------
+
+local rendy = require "rendy.rendy"
+
+--------------------------------------------------------------------------------
+-- Properties
+--------------------------------------------------------------------------------
+
+go.property("active", true)
+go.property("orthographic", true)
+go.property("resize_mode_center", true)
+go.property("resize_mode_expand", false)
+go.property("resize_mode_stretch", false)
+go.property("viewport_x", 0)
+go.property("viewport_y", 0)
+go.property("viewport_width", 1)
+go.property("viewport_height", 1)
+go.property("z_min", -1)
+go.property("z_max", 1)
+go.property("resolution_width", 960)
+go.property("resolution_height", 540)
+go.property("zoom", 1)
+go.property("field_of_view", 45)
+
+--------------------------------------------------------------------------------
+-- Engine Functions
+--------------------------------------------------------------------------------
+
+function init(self)
+	rendy.create_camera(go.get_id())
+end
+
+function final(self)
+	rendy.destroy_camera(go.get_id())
+end
+
+function update(self, dt)
+	local id = go.get_id()
+	if self.active ~= rendy.cameras[id].active then
+		rendy.cameras[id].active = self.active
+	end
+	if self.orthographic ~= rendy.cameras[id].orthographic then
+		rendy.cameras[id].orthographic = self.orthographic
+	end
+	if self.resize_mode_center ~= rendy.cameras[id].resize_mode_center then
+		rendy.cameras[id].resize_mode_center = self.resize_mode_center
+	end
+	if self.resize_mode_center ~= rendy.cameras[id].resize_mode_center then
+		rendy.cameras[id].resize_mode_expand = self.resize_mode_expand
+	end
+	if self.resize_mode_stretch ~= rendy.cameras[id].resize_mode_stretch then
+		rendy.cameras[id].resize_mode_stretch = self.resize_mode_stretch
+	end
+	if self.viewport_x ~= rendy.cameras[id].viewport_x then
+		rendy.cameras[id].viewport_x = self.viewport_x
+	end
+	if self.viewport_y ~= rendy.cameras[id].viewport_y then
+		rendy.cameras[id].viewport_y = self.viewport_y
+	end
+	if self.viewport_width ~= rendy.cameras[id].viewport_width then
+		rendy.cameras[id].viewport_width = self.viewport_width
+	end
+	if self.viewport_height ~= rendy.cameras[id].viewport_height then
+		rendy.cameras[id].viewport_height = self.viewport_height
+	end
+	if self.z_min ~= rendy.cameras[id].z_min then
+		rendy.cameras[id].z_min = self.z_min
+	end
+	if self.z_max ~= rendy.cameras[id].z_max then
+		rendy.cameras[id].z_max = self.z_max
+	end
+	if self.resolution_width ~= rendy.cameras[id].resolution_width then
+		rendy.cameras[id].resolution_width = self.resolution_width
+	end
+	if self.resolution_height ~= rendy.cameras[id].resolution_height then
+		rendy.cameras[id].resolution_height = self.resolution_height
+	end
+	if self.zoom ~= rendy.cameras[id].zoom then
+		rendy.cameras[id].zoom = self.zoom
+	end
+	if self.field_of_view ~= rendy.cameras[id].field_of_view then
+		rendy.cameras[id].field_of_view = self.field_of_view
+	end
+end
