@@ -46,13 +46,13 @@ local rendy_bottom_left = hash("/rendy_bottom_left")
 
 function init(self)
 	msg.post(msg.url(), acquire_input_focus)
-	-- go.animate(msg.url(nil, rendy_top_left, "script"), "zoom", go.PLAYBACK_LOOP_PINGPONG, 4, go.EASING_INOUTQUAD, 3)
-	-- go.animate(msg.url(nil, rendy_top_right, "script"), "zoom", go.PLAYBACK_LOOP_PINGPONG, 4, go.EASING_INOUTQUAD, 3)
-	-- go.animate(msg.url(nil, rendy_bottom_left, "script"), "zoom", go.PLAYBACK_LOOP_PINGPONG, 4, go.EASING_INOUTQUAD, 3)
+	go.animate(msg.url(nil, rendy_top_left, "script"), "zoom", go.PLAYBACK_LOOP_PINGPONG, 4, go.EASING_INOUTQUAD, 10)
+	go.animate(msg.url(nil, rendy_top_right, "script"), "zoom", go.PLAYBACK_LOOP_PINGPONG, 4, go.EASING_INOUTQUAD, 10)
+	go.animate(msg.url(nil, rendy_bottom_left, "script"), "zoom", go.PLAYBACK_LOOP_PINGPONG, 4, go.EASING_INOUTQUAD, 10)
 end
 
 function on_input(self, action_id, action)
 	if not action_id then
-		print(rendy.screen_to_world(rendy_top_left, action.screen_x, action.screen_y))
+		
 	end
 end
