@@ -44,10 +44,10 @@ rendy.window_height = nil
 
 local function is_within_viewport(camera, screen_x, screen_y)
 	return
-		camera.viewport_px <= screen_x and
-		screen_x <= camera.viewport_px + camera.viewport_pw and
-		camera.viewport_py <= screen_y and
-		screen_y <= camera.viewport_py + camera.viewport_ph
+		camera.viewport_pixel_x <= screen_x and
+		screen_x <= camera.viewport_pixel_x + camera.viewport_pixel_width and
+		camera.viewport_pixel_y <= screen_y and
+		screen_y <= camera.viewport_pixel_y + camera.viewport_pixel_height
 end
 
 --------------------------------------------------------------------------------
@@ -61,55 +61,32 @@ function rendy.create_camera(id)
 	end
 	local camera_url = msg.url(nil, id, "camera")
 	local script_url = msg.url(nil, id, "script")
-	local viewport_px = 0
-	local viewport_py = 0
-	local viewport_pw = 0
-	local viewport_ph = 0
-	local view_transform = vmath.matrix4()
-	local projection_transform = vmath.matrix4()
-	local frustum = vmath.matrix4()
-	local active = go.get(script_url, "active")
-	local orthographic = go.get(script_url, "orthographic")
-	local resize_mode_center = go.get(script_url, "resize_mode_center")
-	local resize_mode_expand = go.get(script_url, "resize_mode_expand")
-	local resize_mode_stretch = go.get(script_url, "resize_mode_stretch")
-	local viewport_x = go.get(script_url, "viewport_x")
-	local viewport_y = go.get(script_url, "viewport_y")
-	local viewport_width = go.get(script_url, "viewport_width")
-	local viewport_height = go.get(script_url, "viewport_height")
-	local z_min = go.get(script_url, "z_min")
-	local z_max = go.get(script_url, "z_max")
-	local resolution_width = go.get(script_url, "resolution_width")
-	local resolution_height = go.get(script_url, "resolution_height")
-	local zoom = go.get(script_url, "zoom")
-	local field_of_view = go.get(script_url, "field_of_view")
 	rendy.cameras[id] =
 	{
-		camera_url = camera_url,
-		script_url = script_url,
-		viewport_px = viewport_px,
-		viewport_py = viewport_py,
-		viewport_pw = viewport_pw,
-		viewport_ph = viewport_ph,
-		view_transform = view_transform,
-		projection_transform = projection_transform,
-		frustum = frustum,
-		special = special,
-		active = active,
-		orthographic = orthographic,
-		resize_mode_center = resize_mode_center,
-		resize_mode_expand = resize_mode_expand,
-		resize_mode_stretch = resize_mode_stretch,
-		viewport_x = viewport_x,
-		viewport_y = viewport_y,
-		viewport_width = viewport_width,
-		viewport_height = viewport_height,
-		z_min = z_min,
-		z_max = z_max,
-		resolution_width = resolution_width,
-		resolution_height = resolution_height,
-		zoom = zoom,
-		field_of_view = field_of_view
+		camera_url = msg.url(nil, id, "camera"),
+		script_url = msg.url(nil, id, "script"),
+		viewport_pixel_x = 0,
+		viewport_pixel_y = 0,
+		viewport_pixel_width = 0,
+		viewport_pixel_height = 0,
+		view_transform = vmath.matrix4(),
+		projection_transform = vmath.matrix4(),
+		frustum = vmath.matrix4(),
+		active = go.get(script_url, "active"),
+		orthographic = go.get(script_url, "orthographic"),
+		resize_mode_center = go.get(script_url, "resize_mode_center"),
+		resize_mode_expand = go.get(script_url, "resize_mode_expand"),
+		resize_mode_stretch = go.get(script_url, "resize_mode_stretch"),
+		viewport_fraction_x = go.get(script_url, "viewport_fraction_x"),
+		viewport_fraction_y = go.get(script_url, "viewport_fraction_y"),
+		viewport_fraction_width = go.get(script_url, "viewport_fraction_width"),
+		viewport_fraction_height = go.get(script_url, "viewport_fraction_height"),
+		z_min = go.get(script_url, "z_min"),
+		z_max = go.get(script_url, "z_max"),
+		resolution_width = go.get(script_url, "resolution_width"),
+		resolution_height = go.get(script_url, "resolution_height"),
+		zoom = go.get(script_url, "zoom"),
+		field_of_view = go.get(script_url, "field_of_view")
 	}
 	msg.post(camera_url, message_acquire_camera_focus)
 end
@@ -185,14 +162,14 @@ function rendy.set_camera_viewport(id, x, y, width, height)
 		print("Defold Rendy: rendy.set_camera_viewport() -> Camera does not exist: " .. id)
 		return
 	end
-	go.set(rendy.cameras[id].script_url, "viewport_x", x)
-	go.set(rendy.cameras[id].script_url, "viewport_y", y)
-	go.set(rendy.cameras[id].script_url, "viewport_width", width)
-	go.set(rendy.cameras[id].script_url, "viewport_height", height)
-	rendy.cameras[id].viewport_x = viewport_x
-	rendy.cameras[id].viewport_y = viewport_y
-	rendy.cameras[id].viewport_width = viewport_width
-	rendy.cameras[id].viewport_height = viewport_height
+	go.set(rendy.cameras[id].script_url, "viewport_fraction_x", x)
+	go.set(rendy.cameras[id].script_url, "viewport_fraction_y", y)
+	go.set(rendy.cameras[id].script_url, "viewport_fraction_width", width)
+	go.set(rendy.cameras[id].script_url, "viewport_fraction_height", height)
+	rendy.cameras[id].viewport_fraction_x = viewport_fraction_x
+	rendy.cameras[id].viewport_fraction_y = viewport_fraction_y
+	rendy.cameras[id].viewport_fraction_width = viewport_fraction_width
+	rendy.cameras[id].viewport_fraction_height = viewport_fraction_height
 end
 
 function rendy.set_camera_range(id, z_min, z_max)
@@ -235,6 +212,16 @@ function rendy.set_camera_field_of_view(id, field_of_view)
 	rendy.cameras[id].field_of_view = field_of_view
 end
 
+function rendy.get_camera_ids(screen_x, screen_y)
+	local camera_ids = {}
+	for id, camera in pairs(rendy.cameras) do
+		if is_within_viewport(camera, screen_x, screen_y) then
+			camera_ids[#camera_ids + 1] = id
+		end
+	end
+	return camera_ids
+end
+
 function rendy.screen_to_world(id, screen_x, screen_y)
 	if not rendy.cameras[id] then
 		print("Defold Rendy: rendy.screen_to_world() -> Camera does not exist: " .. id)
@@ -244,19 +231,19 @@ function rendy.screen_to_world(id, screen_x, screen_y)
 		return
 	end
 	local camera_world_position = go.get_world_position(id)
-	local dx_from_viewport = screen_x - rendy.cameras[id].viewport_px
-	local dy_from_viewport = screen_y - rendy.cameras[id].viewport_py
-	local viewport_width_compression = 1 / rendy.cameras[id].viewport_width
-	local viewport_height_compression = 1 / rendy.cameras[id].viewport_height
+	local dx_from_viewport = screen_x - rendy.cameras[id].viewport_pixel_x
+	local dy_from_viewport = screen_y - rendy.cameras[id].viewport_pixel_y
+	local viewport_width_compression = 1 / rendy.cameras[id].viewport_fraction_width
+	local viewport_height_compression = 1 / rendy.cameras[id].viewport_fraction_height
 	local resolution_width_ratio = rendy.cameras[id].resolution_width / rendy.window_width
 	local resolution_height_ratio = rendy.cameras[id].resolution_height / rendy.window_height
 	if rendy.cameras[id].resize_mode_center or rendy.cameras[id].resize_mode_expand then
-		local world_x = (dx_from_viewport - rendy.cameras[id].viewport_pw * 0.5) * viewport_width_compression * rendy.cameras[id].zoom
-		local world_y = (dy_from_viewport - rendy.cameras[id].viewport_ph * 0.5) * viewport_height_compression * rendy.cameras[id].zoom
+		local world_x = (dx_from_viewport - rendy.cameras[id].viewport_pixel_width * 0.5) * viewport_width_compression * rendy.cameras[id].zoom
+		local world_y = (dy_from_viewport - rendy.cameras[id].viewport_pixel_height * 0.5) * viewport_height_compression * rendy.cameras[id].zoom
 		return camera_world_position.x + world_x, camera_world_position.y + world_y
 	elseif rendy.cameras[id].resize_mode_stretch then
-		local world_x = (dx_from_viewport - rendy.cameras[id].viewport_pw * 0.5) * viewport_width_compression * resolution_width_ratio * rendy.cameras[id].zoom
-		local world_y = (dy_from_viewport - rendy.cameras[id].viewport_ph * 0.5) * viewport_height_compression * resolution_height_ratio * rendy.cameras[id].zoom
+		local world_x = (dx_from_viewport - rendy.cameras[id].viewport_pixel_width * 0.5) * viewport_width_compression * resolution_width_ratio * rendy.cameras[id].zoom
+		local world_y = (dy_from_viewport - rendy.cameras[id].viewport_pixel_height * 0.5) * viewport_height_compression * resolution_height_ratio * rendy.cameras[id].zoom
 		return camera_world_position.x + world_x, camera_world_position.y + world_y
 	end
 end
@@ -268,9 +255,9 @@ function rendy.world_to_screen(id, world_position)
 	end
 	local camera_world_position = go.get_world_position(id)
 	if rendy.cameras[id].resize_mode_center or rendy.cameras[id].resize_mode_expand then
-		
+		return 0, 0
 	elseif rendy.cameras[id].resize_mode_stretch then
-		
+		return 0, 0
 	end
 end
 

@@ -16,17 +16,17 @@ instances {
   component_properties {
     id: "script"
     properties {
-      id: "viewport_y"
+      id: "viewport_fraction_y"
       value: "0.5"
       type: PROPERTY_TYPE_NUMBER
     }
     properties {
-      id: "viewport_width"
+      id: "viewport_fraction_width"
       value: "0.5"
       type: PROPERTY_TYPE_NUMBER
     }
     properties {
-      id: "viewport_height"
+      id: "viewport_fraction_height"
       value: "0.5"
       type: PROPERTY_TYPE_NUMBER
     }
@@ -64,22 +64,22 @@ instances {
       type: PROPERTY_TYPE_BOOLEAN
     }
     properties {
-      id: "viewport_x"
+      id: "viewport_fraction_x"
       value: "0.5"
       type: PROPERTY_TYPE_NUMBER
     }
     properties {
-      id: "viewport_y"
+      id: "viewport_fraction_y"
       value: "0.5"
       type: PROPERTY_TYPE_NUMBER
     }
     properties {
-      id: "viewport_width"
+      id: "viewport_fraction_width"
       value: "0.5"
       type: PROPERTY_TYPE_NUMBER
     }
     properties {
-      id: "viewport_height"
+      id: "viewport_fraction_height"
       value: "0.5"
       type: PROPERTY_TYPE_NUMBER
     }
@@ -117,12 +117,12 @@ instances {
       type: PROPERTY_TYPE_BOOLEAN
     }
     properties {
-      id: "viewport_width"
+      id: "viewport_fraction_width"
       value: "0.5"
       type: PROPERTY_TYPE_NUMBER
     }
     properties {
-      id: "viewport_height"
+      id: "viewport_fraction_height"
       value: "0.5"
       type: PROPERTY_TYPE_NUMBER
     }
@@ -135,7 +135,7 @@ instances {
 }
 scale_along_z: 0
 embedded_instances {
-  id: "image_small"
+  id: "logo"
   data: "embedded_components {\n"
   "  id: \"sprite\"\n"
   "  type: \"sprite\"\n"
@@ -212,7 +212,7 @@ embedded_instances {
   }
 }
 embedded_instances {
-  id: "image_large"
+  id: "particle"
   data: "embedded_components {\n"
   "  id: \"sprite\"\n"
   "  type: \"sprite\"\n"

@@ -41,12 +41,15 @@ local message_window_resized = hash("window_resized")
 -- Variables
 --------------------------------------------------------------------------------
 
+local predicate_model = nil
 local predicate_tile = nil
 local predicate_particle = nil
 local predicate_gui = nil
 local predicate_text = nil
 
 local clear_buffers = nil
+
+local camera_gui = nil
 
 --------------------------------------------------------------------------------
 -- Local Functions
@@ -57,12 +60,12 @@ local function apply_resize_mode_center(camera)
 	local window_height_ratio = rendy.window_height / rendy.window_width
 	local resolution_width_ratio = camera.resolution_width / camera.resolution_height
 	local resolution_height_ratio = camera.resolution_height / camera.resolution_width
-	local margin_width = window_width_ratio - resolution_width_ratio > 0 and (window_width_ratio - resolution_width_ratio) * rendy.window_height * camera.viewport_width or 0
-	local margin_height = window_height_ratio - resolution_height_ratio > 0 and (window_height_ratio - resolution_height_ratio) * rendy.window_width * camera.viewport_height or 0
-	camera.viewport_px = rendy.window_width * camera.viewport_x + margin_width * 0.5
-	camera.viewport_py = rendy.window_height * camera.viewport_y + margin_height * 0.5
-	camera.viewport_pw = rendy.window_width * camera.viewport_width - margin_width
-	camera.viewport_ph = rendy.window_height * camera.viewport_height - margin_height
+	local margin_width = window_width_ratio - resolution_width_ratio > 0 and (window_width_ratio - resolution_width_ratio) * rendy.window_height * camera.viewport_fraction_width or 0
+	local margin_height = window_height_ratio - resolution_height_ratio > 0 and (window_height_ratio - resolution_height_ratio) * rendy.window_width * camera.viewport_fraction_height or 0
+	camera.viewport_pixel_x = rendy.window_width * camera.viewport_fraction_x + margin_width * 0.5
+	camera.viewport_pixel_y = rendy.window_height * camera.viewport_fraction_y + margin_height * 0.5
+	camera.viewport_pixel_width = rendy.window_width * camera.viewport_fraction_width - margin_width
+	camera.viewport_pixel_height = rendy.window_height * camera.viewport_fraction_height - margin_height
 	local left = -camera.resolution_width * 0.5 * camera.zoom
 	local right = camera.resolution_width * 0.5 * camera.zoom
 	local bottom = -camera.resolution_height * 0.5 * camera.zoom
@@ -72,10 +75,10 @@ local function apply_resize_mode_center(camera)
 end
 
 local function apply_resize_mode_expand(camera)
-	camera.viewport_px = rendy.window_width * camera.viewport_x
-	camera.viewport_py = rendy.window_height * camera.viewport_y
-	camera.viewport_pw = rendy.window_width * camera.viewport_width
-	camera.viewport_ph = rendy.window_height * camera.viewport_height
+	camera.viewport_pixel_x = rendy.window_width * camera.viewport_fraction_x
+	camera.viewport_pixel_y = rendy.window_height * camera.viewport_fraction_y
+	camera.viewport_pixel_width = rendy.window_width * camera.viewport_fraction_width
+	camera.viewport_pixel_height = rendy.window_height * camera.viewport_fraction_height
 	local left = -rendy.window_width * 0.5 * camera.zoom
 	local right = rendy.window_width * 0.5 * camera.zoom
 	local bottom = -rendy.window_height * 0.5 * camera.zoom
@@ -85,16 +88,25 @@ local function apply_resize_mode_expand(camera)
 end
 
 local function apply_resize_mode_stretch(camera)
-	camera.viewport_px = rendy.window_width * camera.viewport_x
-	camera.viewport_py = rendy.window_height * camera.viewport_y
-	camera.viewport_pw = rendy.window_width * camera.viewport_width
-	camera.viewport_ph = rendy.window_height * camera.viewport_height
+	camera.viewport_pixel_x = rendy.window_width * camera.viewport_fraction_x
+	camera.viewport_pixel_y = rendy.window_height * camera.viewport_fraction_y
+	camera.viewport_pixel_width = rendy.window_width * camera.viewport_fraction_width
+	camera.viewport_pixel_height = rendy.window_height * camera.viewport_fraction_height
 	local left = -camera.resolution_width * 0.5 * camera.zoom
 	local right = camera.resolution_width * 0.5 * camera.zoom
 	local bottom = -camera.resolution_height * 0.5 * camera.zoom
 	local top = camera.resolution_height * 0.5 * camera.zoom
 	camera.projection_transform = vmath.matrix4_orthographic(left, right, bottom, top, camera.z_min, camera.z_max)
 	camera.frustum = camera.projection_transform * camera.view_transform
+end
+
+local function apply_resize_mode_gui()
+	camera_gui.viewport_pixel_x = 0
+	camera_gui.viewport_pixel_y = 0
+	camera_gui.viewport_pixel_width = rendy.window_width
+	camera_gui.viewport_pixel_height = rendy.window_height
+	camera_gui.projection_transform = vmath.matrix4_orthographic(0, rendy.window_width, 0, rendy.window_height, -1, 1)
+	camera_gui.frustum = camera_gui.projection_transform * camera_gui.view_transform
 end
 
 local function set_view_projection_callback(camera_url, view_transform)
@@ -115,10 +127,11 @@ end
 local function window_resized_callback()
 	rendy.window_width = render.get_window_width()
 	rendy.window_height = render.get_window_height()
+	apply_resize_mode_gui()
 end
 
 local function activate_camera(camera)
-	render.set_viewport(camera.viewport_px, camera.viewport_py, camera.viewport_pw, camera.viewport_ph)
+	render.set_viewport(camera.viewport_pixel_x, camera.viewport_pixel_y, camera.viewport_pixel_width, camera.viewport_pixel_height)
 	render.set_view(camera.view_transform)
 	render.set_projection(camera.projection_transform)
 end
@@ -128,7 +141,9 @@ end
 --------------------------------------------------------------------------------
 
 function init(self)
-	window_resized_callback()
+	rendy.window_width = render.get_window_width()
+	rendy.window_height = render.get_window_height()
+	predicate_model = render.predicate({ hash("model") })
 	predicate_tile = render.predicate({ hash("tile") })
 	predicate_particle = render.predicate({ hash("particle") })
 	predicate_gui = render.predicate({ hash("gui") })
@@ -143,6 +158,17 @@ function init(self)
 		[render.BUFFER_COLOR_BIT] = clear_color,
 		[render.BUFFER_DEPTH_BIT] = 1
 	}
+	camera_gui =
+	{
+		viewport_pixel_x = 0,
+		viewport_pixel_y = 0,
+		viewport_pixel_width = 0,
+		viewport_pixel_height = 0,
+		view_transform = vmath.matrix4(),
+		projection_transform = vmath.matrix4(),
+		frustum = vmath.matrix4()
+	}
+	apply_resize_mode_gui()
 end
 
 function update(self, dt)
@@ -152,15 +178,19 @@ function update(self, dt)
 		if camera.active then
 			activate_camera(camera)
 			render.enable_state(render.STATE_DEPTH_TEST)
+			render.enable_state(render.STATE_CULL_FACE)
+			render.draw(predicate_model, { frustum = camera.frustum })
+			render.disable_state(render.STATE_CULL_FACE)
+			render.set_depth_mask(false)
 			render.draw(predicate_tile, { frustum = camera.frustum })
 			render.draw(predicate_particle, { frustum = camera.frustum })
 			render.disable_state(render.STATE_DEPTH_TEST)
 		end
 	end
 	render.set_depth_mask(false)
-	-- render.draw_debug3d({ frustum = camera.frustum })
-	-- render.draw(predicate_gui, { frustum = camera.frustum })
-	-- render.draw(predicate_text, { frustum = camera.frustum })
+	activate_camera(camera_gui)
+	render.draw(predicate_gui)
+	render.draw(predicate_text)
 end
 
 function on_message(self, message_id, message, sender)
