@@ -43,30 +43,54 @@ local go_rendy_top_left = hash("/rendy_top_left")
 local go_rendy_top_right = hash("/rendy_top_right")
 local go_rendy_bottom_left = hash("/rendy_bottom_left")
 
+local resize_modes =
+{
+	[go_rendy_top_left] = "Center",
+	[go_rendy_top_right] = "Expand",
+	[go_rendy_bottom_left] = "Stretch"
+}
+
+--------------------------------------------------------------------------------
+-- Variables
+--------------------------------------------------------------------------------
+
+local action_screen_x = nil
+local action_screen_y = nil
+
 --------------------------------------------------------------------------------
 -- Engine Functions
 --------------------------------------------------------------------------------
 
 function init(self)
 	msg.post(msg.url(), message_acquire_input_focus)
-	go.animate(msg.url(nil, go_rendy_top_left, "script"), "zoom", go.PLAYBACK_LOOP_PINGPONG, 2, go.EASING_INOUTQUAD, 6)
-	go.animate(msg.url(nil, go_rendy_top_right, "script"), "zoom", go.PLAYBACK_LOOP_PINGPONG, 2, go.EASING_INOUTQUAD, 6)
-	go.animate(msg.url(nil, go_rendy_bottom_left, "script"), "zoom", go.PLAYBACK_LOOP_PINGPONG, 2, go.EASING_INOUTQUAD, 6)
-	math.randomseed(os.time())
-	timer.delay(3, true, function()
-		go.set_position(vmath.vector3(math.random(-352, 352), math.random(-142, 0), 0), go_logo)
-	end)
+	go.animate(msg.url(nil, go_rendy_top_left, "script"), "zoom", go.PLAYBACK_LOOP_PINGPONG, 2, go.EASING_INOUTQUAD, 5)
+	go.animate(msg.url(nil, go_rendy_top_right, "script"), "zoom", go.PLAYBACK_LOOP_PINGPONG, 4, go.EASING_INOUTQUAD, 10)
+	go.animate(msg.url(nil, go_rendy_bottom_left, nil), "euler.z", go.PLAYBACK_LOOP_FORWARD, 360, go.EASING_LINEAR, 10)
+end
+
+function update(self, dt)
+	local camera_ids = rendy.get_camera_ids(action_screen_x, action_screen_y)
+	if #camera_ids == 0 then
+		msg.post(msg.url(nil, go_gui, "gui"), message_move_cursor, { camera_id = "nil", resize_mode = "nil", screen_x = "nil", screen_y = "nil", world_x = "nil", world_y = "nil" })
+	else
+		local screen_x, screen_y = rendy.world_to_screen(camera_ids[1], go.get_world_position(go_logo))
+		if screen_x ~= nil and screen_y ~= nil then
+			screen_x = string.format("%.2f", screen_x)
+			screen_y = string.format("%.2f", screen_y)
+		end
+		local world_x, world_y = rendy.screen_to_world(camera_ids[1], action_screen_x, action_screen_y)
+		if world_x ~= nil and world_y ~= nil then
+			go.set_position(vmath.vector3(world_x, world_y, 0), go_logo)
+			world_x = string.format("%.2f", world_x)
+			world_y = string.format("%.2f", world_y)
+		end
+		msg.post(msg.url(nil, go_gui, "gui"), message_move_cursor, { camera_id = camera_ids[1], resize_mode = resize_modes[camera_ids[1]], screen_x = screen_x or "nil", screen_y = screen_y or "nil", world_x = world_x or "nil", world_y = world_y or "nil" })
+	end
 end
 
 function on_input(self, action_id, action)
 	if not action_id then
-		local camera_ids = rendy.get_camera_ids(action.screen_x, action.screen_y)
-		if #camera_ids == 0 then
-			msg.post(msg.url(nil, go_gui, "gui"), message_move_cursor, { id = "nil", screen_x = "nil", screen_y = "nil", world_x = "nil", world_y = "nil" })
-		else
-			local screen_x, screen_y = rendy.world_to_screen(camera_ids[1], go.get_position(go_logo))
-			local world_x, world_y = rendy.screen_to_world(camera_ids[1], action.screen_x, action.screen_y)
-			msg.post(msg.url(nil, go_gui, "gui"), message_move_cursor, { id = camera_ids[1], screen_x = screen_x, screen_y = screen_y, world_x = world_x, world_y = world_y })
-		end
+		action_screen_x = action.screen_x
+		action_screen_y = action.screen_y
 	end
 end

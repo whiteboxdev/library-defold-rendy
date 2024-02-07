@@ -44,9 +44,10 @@ end
 
 function on_message(self, message_id, message, sender)
 	if message_id == message_move_cursor then
-		local text = "Camera Id:\n" .. message.id .. "\n\n"
+		local text = "Camera Id: " .. message.camera_id .. "\n\n"
+		text = text .. "Resize Mode: " .. message.resize_mode .. "\n\n"
 		text = text .. "Logo Screen Position\n(" .. message.screen_x .. ", " .. message.screen_y .. ")\n\n"
-		text = text .. "Cursor World Position\n(" .. message.world_x .. ", " .. message.world_y .. ")"
+		text = text .. "Logo World Position\n(" .. message.world_x .. ", " .. message.world_y .. ")"
 		gui.set_text(node_debug, text)
 	end
 end

@@ -25,6 +25,7 @@ game_binding = /builtins/input/all.input_bindingc
 include_dirs = rendy
 
 [render]
-clear_color_red = 1.0
-clear_color_blue = 1.0
+clear_color_red = 0.8
+clear_color_blue = 0.8
+clear_color_green = 0.7
 
