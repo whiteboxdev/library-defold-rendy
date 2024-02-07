@@ -64,6 +64,11 @@ instances {
       type: PROPERTY_TYPE_BOOLEAN
     }
     properties {
+      id: "order"
+      value: "2.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
       id: "viewport_fraction_x"
       value: "0.5"
       type: PROPERTY_TYPE_NUMBER
@@ -115,6 +120,11 @@ instances {
       id: "resize_mode_stretch"
       value: "true"
       type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "order"
+      value: "3.0"
+      type: PROPERTY_TYPE_NUMBER
     }
     properties {
       id: "viewport_fraction_width"
@@ -246,8 +256,8 @@ embedded_instances {
     w: 1.0
   }
   scale3 {
-    x: 75.0
-    y: 75.0
+    x: 100.0
+    y: 100.0
     z: 1.0
   }
 }

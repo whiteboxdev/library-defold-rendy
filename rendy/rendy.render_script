@@ -136,6 +136,14 @@ local function activate_camera(camera)
 	render.set_projection(camera.projection_transform)
 end
 
+local function get_ordered_camera_ids()
+	local ids = {}
+	for id, camera in pairs(rendy.cameras) do
+		ids[camera.order] = id
+	end
+	return ids
+end
+
 --------------------------------------------------------------------------------
 -- Engine Functions
 --------------------------------------------------------------------------------
@@ -173,8 +181,11 @@ end
 
 function update(self, dt)
 	render.set_depth_mask(true)
+	render.set_stencil_mask(0xff)
 	render.clear(clear_buffers)
-	for _, camera in pairs(rendy.cameras) do
+	local ordered_camera_ids = get_ordered_camera_ids()
+	for i = 1, #ordered_camera_ids do
+		local camera = rendy.cameras[ordered_camera_ids[i]]
 		if camera.active then
 			activate_camera(camera)
 			render.enable_state(render.STATE_DEPTH_TEST)
@@ -182,15 +193,21 @@ function update(self, dt)
 			render.draw(predicate_model, { frustum = camera.frustum })
 			render.disable_state(render.STATE_CULL_FACE)
 			render.set_depth_mask(false)
+			render.set_blend_func(render.BLEND_SRC_ALPHA, render.BLEND_ONE_MINUS_SRC_ALPHA)
+			render.enable_state(render.STATE_BLEND)
 			render.draw(predicate_tile, { frustum = camera.frustum })
 			render.draw(predicate_particle, { frustum = camera.frustum })
+			render.disable_state(render.STATE_BLEND)
 			render.disable_state(render.STATE_DEPTH_TEST)
 		end
 	end
 	render.set_depth_mask(false)
 	activate_camera(camera_gui)
+	render.enable_state(render.STATE_STENCIL_TEST)
 	render.draw(predicate_gui)
 	render.draw(predicate_text)
+	render.disable_state(render.STATE_STENCIL_TEST)
+	render.disable_state(render.STATE_BLEND)
 end
 
 function on_message(self, message_id, message, sender)

@@ -39,6 +39,7 @@ go.property("orthographic", true)
 go.property("resize_mode_center", true)
 go.property("resize_mode_expand", false)
 go.property("resize_mode_stretch", false)
+go.property("order", 1)
 go.property("viewport_fraction_x", 0)
 go.property("viewport_fraction_y", 0)
 go.property("viewport_fraction_width", 1)
@@ -78,6 +79,9 @@ function update(self, dt)
 	end
 	if self.resize_mode_stretch ~= rendy.cameras[id].resize_mode_stretch then
 		rendy.cameras[id].resize_mode_stretch = self.resize_mode_stretch
+	end
+	if self.order ~= rendy.cameras[id].order then
+		rendy.cameras[id].order = self.order
 	end
 	if self.viewport_fraction_x ~= rendy.cameras[id].viewport_fraction_x then
 		rendy.cameras[id].viewport_fraction_x = self.viewport_fraction_x

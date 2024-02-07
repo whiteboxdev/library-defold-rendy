@@ -84,6 +84,7 @@ function rendy.create_camera(camera_id)
 		resize_mode_center = go.get(script_url, "resize_mode_center"),
 		resize_mode_expand = go.get(script_url, "resize_mode_expand"),
 		resize_mode_stretch = go.get(script_url, "resize_mode_stretch"),
+		order = go.get(script_url, "order"),
 		viewport_fraction_x = go.get(script_url, "viewport_fraction_x"),
 		viewport_fraction_y = go.get(script_url, "viewport_fraction_y"),
 		viewport_fraction_width = go.get(script_url, "viewport_fraction_width"),
@@ -162,6 +163,15 @@ function rendy.set_camera_resize_mode_stretch(camera_id)
 	rendy.cameras[camera_id].resize_mode_center = false
 	rendy.cameras[camera_id].resize_mode_expand = false
 	rendy.cameras[camera_id].resize_mode_stretch = true
+end
+
+function rendy.set_camera_order(camera_id, order)
+	if not rendy.cameras[camera_id] then
+		print("Defold Rendy: rendy.set_camera_order() -> Camera does not exist: " .. camera_id)
+		return
+	end
+	go.set(rendy.cameras[camera_id].script_url, "order", order)
+	rendy.cameras[camera_id].order = order
 end
 
 function rendy.set_camera_viewport(camera_id, x, y, width, height)
