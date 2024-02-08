@@ -41,11 +41,34 @@ local message_window_resized = hash("window_resized")
 -- Variables
 --------------------------------------------------------------------------------
 
-local predicate_model = nil
-local predicate_tile = nil
-local predicate_particle = nil
-local predicate_gui = nil
-local predicate_text = nil
+local predicates =
+{
+	model =
+	{
+		tags = { hash("model") },
+		object = nil
+	},
+	tile =
+	{
+		tags = { hash("tile") },
+		object = nil
+	},
+	particle =
+	{
+		tags = { hash("particle") },
+		object = nil
+	},
+	gui =
+	{
+		tags = { hash("gui") },
+		object = nil
+	},
+	text =
+	{
+		tags = { hash("text") },
+		object = nil
+	},
+}
 
 local clear_buffers = nil
 
@@ -148,6 +171,41 @@ local function activate_camera(camera)
 	render.set_projection(camera.projection_transform)
 end
 
+local function create_predicates()
+	for _, predicate in pairs(predicates) do
+		predicate.object = render.predicate(predicate.tags)
+	end
+end
+
+local function create_camera_gui()
+	camera_gui =
+	{
+		viewport_pixel_x = 0,
+		viewport_pixel_y = 0,
+		viewport_pixel_width = 0,
+		viewport_pixel_height = 0,
+		view_transform = vmath.matrix4(),
+		projection_transform = vmath.matrix4(),
+		frustum = vmath.matrix4()
+	}
+	apply_resize_mode_gui()
+end
+
+local function create_clear_buffers()
+	local clear_color_red = sys.get_config_number("render.clear_color_red", 0)
+	local clear_color_green = sys.get_config_number("render.clear_color_green", 0)
+	local clear_color_blue = sys.get_config_number("render.clear_color_blue", 0)
+	local clear_color_alpha = sys.get_config_number("render.clear_color_alpha", 0)
+	local clear_color = vmath.vector4(clear_color_red, clear_color_green, clear_color_blue, clear_color_alpha)
+	clear_buffers =
+	{
+		[render.BUFFER_COLOR_BIT] = clear_color,
+		[render.BUFFER_DEPTH_BIT] = 1,
+		[render.BUFFER_STENCIL_BIT] = 0
+	}
+end
+	
+
 local function get_ordered_camera_ids()
 	local ids = {}
 	for id, camera in pairs(rendy.cameras) do
@@ -165,32 +223,9 @@ function init(self)
 	rendy.display_height = sys.get_config_int("display.height")
 	rendy.window_width = render.get_window_width()
 	rendy.window_height = render.get_window_height()
-	predicate_model = render.predicate({ hash("model") })
-	predicate_tile = render.predicate({ hash("tile") })
-	predicate_particle = render.predicate({ hash("particle") })
-	predicate_gui = render.predicate({ hash("gui") })
-	predicate_text = render.predicate({ hash("text") })
-	local clear_color_red = sys.get_config_number("render.clear_color_red", 0)
-	local clear_color_green = sys.get_config_number("render.clear_color_green", 0)
-	local clear_color_blue = sys.get_config_number("render.clear_color_blue", 0)
-	local clear_color_alpha = sys.get_config_number("render.clear_color_alpha", 0)
-	local clear_color = vmath.vector4(clear_color_red, clear_color_green, clear_color_blue, clear_color_alpha)
-	clear_buffers =
-	{
-		[render.BUFFER_COLOR_BIT] = clear_color,
-		[render.BUFFER_DEPTH_BIT] = 1
-	}
-	camera_gui =
-	{
-		viewport_pixel_x = 0,
-		viewport_pixel_y = 0,
-		viewport_pixel_width = 0,
-		viewport_pixel_height = 0,
-		view_transform = vmath.matrix4(),
-		projection_transform = vmath.matrix4(),
-		frustum = vmath.matrix4()
-	}
-	apply_resize_mode_gui()
+	create_predicates()
+	create_clear_buffers()
+	create_camera_gui()
 end
 
 function update(self, dt)
@@ -204,13 +239,13 @@ function update(self, dt)
 			activate_camera(camera)
 			render.enable_state(render.STATE_DEPTH_TEST)
 			render.enable_state(render.STATE_CULL_FACE)
-			render.draw(predicate_model, { frustum = camera.frustum })
+			render.draw(predicates.model.object, { frustum = camera.frustum })
 			render.disable_state(render.STATE_CULL_FACE)
 			render.set_depth_mask(false)
 			render.set_blend_func(render.BLEND_SRC_ALPHA, render.BLEND_ONE_MINUS_SRC_ALPHA)
 			render.enable_state(render.STATE_BLEND)
-			render.draw(predicate_tile, { frustum = camera.frustum })
-			render.draw(predicate_particle, { frustum = camera.frustum })
+			render.draw(predicates.tile.object, { frustum = camera.frustum })
+			render.draw(predicates.particle.object, { frustum = camera.frustum })
 			render.disable_state(render.STATE_BLEND)
 			render.disable_state(render.STATE_DEPTH_TEST)
 		end
@@ -218,8 +253,8 @@ function update(self, dt)
 	render.set_depth_mask(false)
 	activate_camera(camera_gui)
 	render.enable_state(render.STATE_STENCIL_TEST)
-	render.draw(predicate_gui)
-	render.draw(predicate_text)
+	render.draw(predicates.gui.object)
+	render.draw(predicates.text.object)
 	render.disable_state(render.STATE_STENCIL_TEST)
 	render.disable_state(render.STATE_BLEND)
 end

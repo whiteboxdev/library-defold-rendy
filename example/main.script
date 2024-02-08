@@ -63,9 +63,9 @@ local action_screen_y = nil
 
 function init(self)
 	msg.post(msg.url(), message_acquire_input_focus)
-	go.animate(msg.url(nil, go_rendy_top_left, "script"), "zoom", go.PLAYBACK_LOOP_PINGPONG, 2, go.EASING_INOUTQUAD, 5)
-	go.animate(msg.url(nil, go_rendy_top_right, "script"), "zoom", go.PLAYBACK_LOOP_PINGPONG, 4, go.EASING_INOUTQUAD, 10)
-	go.animate(msg.url(nil, go_rendy_bottom_left, nil), "euler.z", go.PLAYBACK_LOOP_FORWARD, 360, go.EASING_LINEAR, 10)
+	go.animate(msg.url(nil, go_rendy_top_left, "script"), "zoom", go.PLAYBACK_LOOP_PINGPONG, 2, go.EASING_INOUTQUAD, 3)
+	go.animate(msg.url(nil, go_rendy_top_right, "script"), "zoom", go.PLAYBACK_LOOP_PINGPONG, 4, go.EASING_INOUTQUAD, 6)
+	go.animate(msg.url(nil, go_rendy_bottom_left, nil), "euler.z", go.PLAYBACK_LOOP_FORWARD, 360, go.EASING_LINEAR, 3)
 end
 
 function update(self, dt)

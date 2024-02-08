@@ -73,6 +73,7 @@ function rendy.create_camera(camera_id)
 	local script_url = msg.url(nil, camera_id, "script")
 	rendy.cameras[camera_id] =
 	{
+		camera_id = camera_id,
 		camera_url = msg.url(nil, camera_id, "camera"),
 		script_url = msg.url(nil, camera_id, "script"),
 		viewport_pixel_x = 0,
