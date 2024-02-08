@@ -40,14 +40,14 @@ go.property("resize_mode_center", true)
 go.property("resize_mode_expand", false)
 go.property("resize_mode_stretch", false)
 go.property("order", 1)
-go.property("viewport_fraction_x", 0)
-go.property("viewport_fraction_y", 0)
-go.property("viewport_fraction_width", 1)
-go.property("viewport_fraction_height", 1)
-go.property("z_min", -1)
-go.property("z_max", 1)
+go.property("viewport_x", 0)
+go.property("viewport_y", 0)
+go.property("viewport_width", 960)
+go.property("viewport_height", 540)
 go.property("resolution_width", 960)
 go.property("resolution_height", 540)
+go.property("z_min", -1)
+go.property("z_max", 1)
 go.property("zoom", 1)
 go.property("field_of_view", 45)
 
@@ -83,29 +83,29 @@ function update(self, dt)
 	if self.order ~= rendy.cameras[id].order then
 		rendy.cameras[id].order = self.order
 	end
-	if self.viewport_fraction_x ~= rendy.cameras[id].viewport_fraction_x then
-		rendy.cameras[id].viewport_fraction_x = self.viewport_fraction_x
+	if self.viewport_x ~= rendy.cameras[id].viewport_x then
+		rendy.cameras[id].viewport_x = self.viewport_x
 	end
-	if self.viewport_fraction_y ~= rendy.cameras[id].viewport_fraction_y then
-		rendy.cameras[id].viewport_fraction_y = self.viewport_fraction_y
+	if self.viewport_y ~= rendy.cameras[id].viewport_y then
+		rendy.cameras[id].viewport_y = self.viewport_y
 	end
-	if self.viewport_fraction_width ~= rendy.cameras[id].viewport_fraction_width then
-		rendy.cameras[id].viewport_fraction_width = self.viewport_fraction_width
+	if self.viewport_width ~= rendy.cameras[id].viewport_width then
+		rendy.cameras[id].viewport_width = self.viewport_width
 	end
-	if self.viewport_fraction_height ~= rendy.cameras[id].viewport_fraction_height then
-		rendy.cameras[id].viewport_fraction_height = self.viewport_fraction_height
-	end
-	if self.z_min ~= rendy.cameras[id].z_min then
-		rendy.cameras[id].z_min = self.z_min
-	end
-	if self.z_max ~= rendy.cameras[id].z_max then
-		rendy.cameras[id].z_max = self.z_max
+	if self.viewport_height ~= rendy.cameras[id].viewport_height then
+		rendy.cameras[id].viewport_height = self.viewport_height
 	end
 	if self.resolution_width ~= rendy.cameras[id].resolution_width then
 		rendy.cameras[id].resolution_width = self.resolution_width
 	end
 	if self.resolution_height ~= rendy.cameras[id].resolution_height then
 		rendy.cameras[id].resolution_height = self.resolution_height
+	end
+	if self.z_min ~= rendy.cameras[id].z_min then
+		rendy.cameras[id].z_min = self.z_min
+	end
+	if self.z_max ~= rendy.cameras[id].z_max then
+		rendy.cameras[id].z_max = self.z_max
 	end
 	if self.zoom ~= rendy.cameras[id].zoom then
 		rendy.cameras[id].zoom = self.zoom

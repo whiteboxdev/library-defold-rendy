@@ -60,12 +60,16 @@ local function apply_resize_mode_center(camera)
 	local window_height_ratio = rendy.window_height / rendy.window_width
 	local resolution_width_ratio = camera.resolution_width / camera.resolution_height
 	local resolution_height_ratio = camera.resolution_height / camera.resolution_width
-	local margin_width = window_width_ratio - resolution_width_ratio > 0 and (window_width_ratio - resolution_width_ratio) * rendy.window_height * camera.viewport_fraction_width or 0
-	local margin_height = window_height_ratio - resolution_height_ratio > 0 and (window_height_ratio - resolution_height_ratio) * rendy.window_width * camera.viewport_fraction_height or 0
-	camera.viewport_pixel_x = rendy.window_width * camera.viewport_fraction_x + margin_width * 0.5
-	camera.viewport_pixel_y = rendy.window_height * camera.viewport_fraction_y + margin_height * 0.5
-	camera.viewport_pixel_width = rendy.window_width * camera.viewport_fraction_width - margin_width
-	camera.viewport_pixel_height = rendy.window_height * camera.viewport_fraction_height - margin_height
+	local viewport_fraction_x = camera.viewport_x / rendy.display_width
+	local viewport_fraction_y = camera.viewport_y / rendy.display_height
+	local viewport_fraction_width = camera.viewport_width / rendy.display_width
+	local viewport_fraction_height = camera.viewport_height / rendy.display_height
+	local margin_width = window_width_ratio - resolution_width_ratio > 0 and (window_width_ratio - resolution_width_ratio) * rendy.window_height * viewport_fraction_width or 0
+	local margin_height = window_height_ratio - resolution_height_ratio > 0 and (window_height_ratio - resolution_height_ratio) * rendy.window_width * viewport_fraction_height or 0
+	camera.viewport_pixel_x = rendy.window_width * viewport_fraction_x + margin_width * 0.5
+	camera.viewport_pixel_y = rendy.window_height * viewport_fraction_y + margin_height * 0.5
+	camera.viewport_pixel_width = rendy.window_width * viewport_fraction_width - margin_width
+	camera.viewport_pixel_height = rendy.window_height * viewport_fraction_height - margin_height
 	local left = -camera.resolution_width * 0.5 * camera.zoom
 	local right = camera.resolution_width * 0.5 * camera.zoom
 	local bottom = -camera.resolution_height * 0.5 * camera.zoom
@@ -75,10 +79,14 @@ local function apply_resize_mode_center(camera)
 end
 
 local function apply_resize_mode_expand(camera)
-	camera.viewport_pixel_x = rendy.window_width * camera.viewport_fraction_x
-	camera.viewport_pixel_y = rendy.window_height * camera.viewport_fraction_y
-	camera.viewport_pixel_width = rendy.window_width * camera.viewport_fraction_width
-	camera.viewport_pixel_height = rendy.window_height * camera.viewport_fraction_height
+	local viewport_fraction_x = camera.viewport_x / rendy.display_width
+	local viewport_fraction_y = camera.viewport_y / rendy.display_height
+	local viewport_fraction_width = camera.viewport_width / rendy.display_width
+	local viewport_fraction_height = camera.viewport_height / rendy.display_height
+	camera.viewport_pixel_x = rendy.window_width * viewport_fraction_x
+	camera.viewport_pixel_y = rendy.window_height * viewport_fraction_y
+	camera.viewport_pixel_width = rendy.window_width * viewport_fraction_width
+	camera.viewport_pixel_height = rendy.window_height * viewport_fraction_height
 	local left = -rendy.window_width * 0.5 * camera.zoom
 	local right = rendy.window_width * 0.5 * camera.zoom
 	local bottom = -rendy.window_height * 0.5 * camera.zoom
@@ -88,10 +96,14 @@ local function apply_resize_mode_expand(camera)
 end
 
 local function apply_resize_mode_stretch(camera)
-	camera.viewport_pixel_x = rendy.window_width * camera.viewport_fraction_x
-	camera.viewport_pixel_y = rendy.window_height * camera.viewport_fraction_y
-	camera.viewport_pixel_width = rendy.window_width * camera.viewport_fraction_width
-	camera.viewport_pixel_height = rendy.window_height * camera.viewport_fraction_height
+	local viewport_fraction_x = camera.viewport_x / rendy.display_width
+	local viewport_fraction_y = camera.viewport_y / rendy.display_height
+	local viewport_fraction_width = camera.viewport_width / rendy.display_width
+	local viewport_fraction_height = camera.viewport_height / rendy.display_height
+	camera.viewport_pixel_x = rendy.window_width * viewport_fraction_x
+	camera.viewport_pixel_y = rendy.window_height * viewport_fraction_y
+	camera.viewport_pixel_width = rendy.window_width * viewport_fraction_width
+	camera.viewport_pixel_height = rendy.window_height * viewport_fraction_height
 	local left = -camera.resolution_width * 0.5 * camera.zoom
 	local right = camera.resolution_width * 0.5 * camera.zoom
 	local bottom = -camera.resolution_height * 0.5 * camera.zoom
@@ -149,6 +161,8 @@ end
 --------------------------------------------------------------------------------
 
 function init(self)
+	rendy.display_width = sys.get_config_int("display.width")
+	rendy.display_height = sys.get_config_int("display.height")
 	rendy.window_width = render.get_window_width()
 	rendy.window_height = render.get_window_height()
 	predicate_model = render.predicate({ hash("model") })

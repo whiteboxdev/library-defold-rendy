@@ -16,18 +16,18 @@ instances {
   component_properties {
     id: "script"
     properties {
-      id: "viewport_fraction_y"
-      value: "0.5"
+      id: "viewport_y"
+      value: "270.0"
       type: PROPERTY_TYPE_NUMBER
     }
     properties {
-      id: "viewport_fraction_width"
-      value: "0.5"
+      id: "viewport_width"
+      value: "480.0"
       type: PROPERTY_TYPE_NUMBER
     }
     properties {
-      id: "viewport_fraction_height"
-      value: "0.5"
+      id: "viewport_height"
+      value: "270.0"
       type: PROPERTY_TYPE_NUMBER
     }
   }
@@ -69,23 +69,23 @@ instances {
       type: PROPERTY_TYPE_NUMBER
     }
     properties {
-      id: "viewport_fraction_x"
-      value: "0.5"
+      id: "viewport_x"
+      value: "480.0"
       type: PROPERTY_TYPE_NUMBER
     }
     properties {
-      id: "viewport_fraction_y"
-      value: "0.5"
+      id: "viewport_y"
+      value: "270.0"
       type: PROPERTY_TYPE_NUMBER
     }
     properties {
-      id: "viewport_fraction_width"
-      value: "0.5"
+      id: "viewport_width"
+      value: "480.0"
       type: PROPERTY_TYPE_NUMBER
     }
     properties {
-      id: "viewport_fraction_height"
-      value: "0.5"
+      id: "viewport_height"
+      value: "270.0"
       type: PROPERTY_TYPE_NUMBER
     }
   }
@@ -127,13 +127,13 @@ instances {
       type: PROPERTY_TYPE_NUMBER
     }
     properties {
-      id: "viewport_fraction_width"
-      value: "0.5"
+      id: "viewport_width"
+      value: "480.0"
       type: PROPERTY_TYPE_NUMBER
     }
     properties {
-      id: "viewport_fraction_height"
-      value: "0.5"
+      id: "viewport_height"
+      value: "270.0"
       type: PROPERTY_TYPE_NUMBER
     }
   }

@@ -39,6 +39,9 @@ local rendy = {}
 
 rendy.cameras = {}
 
+rendy.display_width = nil
+rendy.display_height = nil
+
 rendy.window_width = nil
 rendy.window_height = nil
 
@@ -85,14 +88,14 @@ function rendy.create_camera(camera_id)
 		resize_mode_expand = go.get(script_url, "resize_mode_expand"),
 		resize_mode_stretch = go.get(script_url, "resize_mode_stretch"),
 		order = go.get(script_url, "order"),
-		viewport_fraction_x = go.get(script_url, "viewport_fraction_x"),
-		viewport_fraction_y = go.get(script_url, "viewport_fraction_y"),
-		viewport_fraction_width = go.get(script_url, "viewport_fraction_width"),
-		viewport_fraction_height = go.get(script_url, "viewport_fraction_height"),
-		z_min = go.get(script_url, "z_min"),
-		z_max = go.get(script_url, "z_max"),
+		viewport_x = go.get(script_url, "viewport_x"),
+		viewport_y = go.get(script_url, "viewport_y"),
+		viewport_width = go.get(script_url, "viewport_width"),
+		viewport_height = go.get(script_url, "viewport_height"),
 		resolution_width = go.get(script_url, "resolution_width"),
 		resolution_height = go.get(script_url, "resolution_height"),
+		z_min = go.get(script_url, "z_min"),
+		z_max = go.get(script_url, "z_max"),
 		zoom = go.get(script_url, "zoom"),
 		field_of_view = go.get(script_url, "field_of_view")
 	}
@@ -179,25 +182,14 @@ function rendy.set_camera_viewport(camera_id, x, y, width, height)
 		print("Defold Rendy: rendy.set_camera_viewport() -> Camera does not exist: " .. camera_id)
 		return
 	end
-	go.set(rendy.cameras[camera_id].script_url, "viewport_fraction_x", x)
-	go.set(rendy.cameras[camera_id].script_url, "viewport_fraction_y", y)
-	go.set(rendy.cameras[camera_id].script_url, "viewport_fraction_width", width)
-	go.set(rendy.cameras[camera_id].script_url, "viewport_fraction_height", height)
-	rendy.cameras[camera_id].viewport_fraction_x = viewport_fraction_x
-	rendy.cameras[camera_id].viewport_fraction_y = viewport_fraction_y
-	rendy.cameras[camera_id].viewport_fraction_width = viewport_fraction_width
-	rendy.cameras[camera_id].viewport_fraction_height = viewport_fraction_height
-end
-
-function rendy.set_camera_range(camera_id, z_min, z_max)
-	if not rendy.cameras[camera_id] then
-		print("Defold Rendy: rendy.set_camera_range() -> Camera does not exist: " .. camera_id)
-		return
-	end
-	go.set(rendy.cameras[camera_id].script_url, "z_min", z_min)
-	go.set(rendy.cameras[camera_id].script_url, "z_max", z_max)
-	rendy.cameras[camera_id].z_min = z_min
-	rendy.cameras[camera_id].z_max = z_max
+	go.set(rendy.cameras[camera_id].script_url, "viewport_x", x)
+	go.set(rendy.cameras[camera_id].script_url, "viewport_y", y)
+	go.set(rendy.cameras[camera_id].script_url, "viewport_width", width)
+	go.set(rendy.cameras[camera_id].script_url, "viewport_height", height)
+	rendy.cameras[camera_id].viewport_x = viewport_x
+	rendy.cameras[camera_id].viewport_y = viewport_y
+	rendy.cameras[camera_id].viewport_width = viewport_width
+	rendy.cameras[camera_id].viewport_height = viewport_height
 end
 
 function rendy.set_camera_resolution(camera_id, width, height)
@@ -209,6 +201,17 @@ function rendy.set_camera_resolution(camera_id, width, height)
 	go.set(rendy.cameras[camera_id].script_url, "resolution_height", height)
 	rendy.cameras[camera_id].resolution_width = width
 	rendy.cameras[camera_id].resolution_height = height
+end
+
+function rendy.set_camera_range(camera_id, z_min, z_max)
+	if not rendy.cameras[camera_id] then
+		print("Defold Rendy: rendy.set_camera_range() -> Camera does not exist: " .. camera_id)
+		return
+	end
+	go.set(rendy.cameras[camera_id].script_url, "z_min", z_min)
+	go.set(rendy.cameras[camera_id].script_url, "z_max", z_max)
+	rendy.cameras[camera_id].z_min = z_min
+	rendy.cameras[camera_id].z_max = z_max
 end
 
 function rendy.set_camera_zoom(camera_id, zoom)
@@ -248,13 +251,17 @@ function rendy.screen_to_world(camera_id, screen_x, screen_y)
 		return
 	end
 	local camera_world_position = go.get_world_position(camera_id)
+	local camera_world_rotation = go.get_world_rotation(camera_id)
 	local dx_from_viewport = screen_x - rendy.cameras[camera_id].viewport_pixel_x
 	local dy_from_viewport = screen_y - rendy.cameras[camera_id].viewport_pixel_y
-	local viewport_width_compression = 1 / rendy.cameras[camera_id].viewport_fraction_width
-	local viewport_height_compression = 1 / rendy.cameras[camera_id].viewport_fraction_height
+	local viewport_fraction_width = rendy.cameras[camera_id].viewport_width / rendy.display_width
+	local viewport_fraction_height = rendy.cameras[camera_id].viewport_height / rendy.display_height
+	local viewport_width_compression = 1 / viewport_fraction_width
+	local viewport_height_compression = 1 / viewport_fraction_height
 	local world_x = (dx_from_viewport - rendy.cameras[camera_id].viewport_pixel_width * 0.5) * viewport_width_compression * rendy.cameras[camera_id].zoom + camera_world_position.x
 	local world_y = (dy_from_viewport - rendy.cameras[camera_id].viewport_pixel_height * 0.5) * viewport_height_compression * rendy.cameras[camera_id].zoom + camera_world_position.y
-	return  world_x, world_y
+	local world_position = vmath.rotate(camera_world_rotation, vmath.vector3(world_x, world_y, 0))
+	return world_position.x, world_position.y
 end
 
 function rendy.world_to_screen(camera_id, world_position)
@@ -268,6 +275,7 @@ function rendy.world_to_screen(camera_id, world_position)
 	end
 	local screen_x = (ndc_position.x + 1) * rendy.cameras[camera_id].viewport_pixel_width * 0.5
 	local screen_y = (ndc_position.y + 1) * rendy.cameras[camera_id].viewport_pixel_height * 0.5
+	-- todo: screen_z
 	return screen_x, screen_y
 end
 
