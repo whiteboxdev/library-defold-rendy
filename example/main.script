@@ -75,14 +75,14 @@ function update(self, dt)
 	else
 		local screen_x, screen_y = rendy.world_to_screen(camera_ids[1], go.get_world_position(go_logo))
 		if screen_x ~= nil and screen_y ~= nil then
-			screen_x = string.format("%.2f", screen_x)
-			screen_y = string.format("%.2f", screen_y)
+			screen_x = string.format("%.0f", screen_x)
+			screen_y = string.format("%.0f", screen_y)
 		end
 		local world_x, world_y = rendy.screen_to_world(camera_ids[1], action_screen_x, action_screen_y)
 		if world_x ~= nil and world_y ~= nil then
 			go.set_position(vmath.vector3(world_x, world_y, 0), go_logo)
-			world_x = string.format("%.2f", world_x)
-			world_y = string.format("%.2f", world_y)
+			world_x = string.format("%.0f", world_x)
+			world_y = string.format("%.0f", world_y)
 		end
 		msg.post(msg.url(nil, go_gui, "gui"), message_move_cursor, { camera_id = camera_ids[1], resize_mode = resize_modes[camera_ids[1]], screen_x = screen_x or "nil", screen_y = screen_y or "nil", world_x = world_x or "nil", world_y = world_y or "nil" })
 	end

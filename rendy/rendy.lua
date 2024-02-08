@@ -252,14 +252,16 @@ function rendy.screen_to_world(camera_id, screen_x, screen_y)
 	end
 	local camera_world_position = go.get_world_position(camera_id)
 	local camera_world_rotation = go.get_world_rotation(camera_id)
-	local dx_from_viewport = screen_x - rendy.cameras[camera_id].viewport_pixel_x
-	local dy_from_viewport = screen_y - rendy.cameras[camera_id].viewport_pixel_y
+	local dx_from_viewport_center = screen_x - rendy.cameras[camera_id].viewport_pixel_x - rendy.cameras[camera_id].viewport_pixel_width * 0.5
+	local dy_from_viewport_center = screen_y - rendy.cameras[camera_id].viewport_pixel_y - rendy.cameras[camera_id].viewport_pixel_height * 0.5
 	local viewport_fraction_width = rendy.cameras[camera_id].viewport_width / rendy.display_width
 	local viewport_fraction_height = rendy.cameras[camera_id].viewport_height / rendy.display_height
 	local viewport_width_compression = 1 / viewport_fraction_width
 	local viewport_height_compression = 1 / viewport_fraction_height
-	local world_x = (dx_from_viewport - rendy.cameras[camera_id].viewport_pixel_width * 0.5) * viewport_width_compression * rendy.cameras[camera_id].zoom + camera_world_position.x
-	local world_y = (dy_from_viewport - rendy.cameras[camera_id].viewport_pixel_height * 0.5) * viewport_height_compression * rendy.cameras[camera_id].zoom + camera_world_position.y
+	local viewport_width_ratio = rendy.cameras[camera_id].resize_mode_expand and 1 or rendy.cameras[camera_id].viewport_width / rendy.cameras[camera_id].viewport_pixel_width
+	local viewport_height_ratio = rendy.cameras[camera_id].resize_mode_expand and 1 or rendy.cameras[camera_id].viewport_height / rendy.cameras[camera_id].viewport_pixel_height
+	local world_x = dx_from_viewport_center * viewport_width_compression * viewport_width_ratio * rendy.cameras[camera_id].zoom + camera_world_position.x
+	local world_y = dy_from_viewport_center * viewport_height_compression * viewport_height_ratio * rendy.cameras[camera_id].zoom + camera_world_position.y
 	local world_position = vmath.rotate(camera_world_rotation, vmath.vector3(world_x, world_y, 0))
 	return world_position.x, world_position.y
 end
