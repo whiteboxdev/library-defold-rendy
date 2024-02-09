@@ -83,6 +83,8 @@ function rendy.create_camera(camera_id)
 		view_transform = vmath.matrix4(),
 		projection_transform = vmath.matrix4(),
 		frustum = vmath.matrix4(),
+		shake_timer = nil,
+		shake_position = nil,
 		active = go.get(script_url, "active"),
 		orthographic = go.get(script_url, "orthographic"),
 		resize_mode_center = go.get(script_url, "resize_mode_center"),
@@ -233,7 +235,7 @@ function rendy.set_camera_field_of_view(camera_id, field_of_view)
 	rendy.cameras[camera_id].field_of_view = field_of_view
 end
 
-function rendy.get_camera_ids(screen_x, screen_y)
+function rendy.get_camera_stack(screen_x, screen_y)
 	local camera_ids = {}
 	for camera_id, camera in pairs(rendy.cameras) do
 		if is_within_viewport(camera, screen_x, screen_y) then
@@ -241,6 +243,53 @@ function rendy.get_camera_ids(screen_x, screen_y)
 		end
 	end
 	return camera_ids
+end
+
+function rendy.shake_camera(camera_id, radius, intensity, duration)
+	if not rendy.cameras[camera_id] then
+		print("Defold Rendy: rendy.shake_camera() -> Camera does not exist: " .. camera_id)
+		return
+	end
+	if radius <= 0 or intensity <= 0 or duration <= 0 then
+		print("Defold Rendy: rendy.shake_camera() -> Radius, intensity, and duration must be > 0.")
+		return
+	end
+	if rendy.cameras[camera_id].shake_timer then
+		rendy.cancel_camera_shake(camera_id)
+	end
+	rendy.cameras[camera_id].shake_position = go.get_position(camera_id)
+	local shake_duration = duration / intensity
+	local animate = function()
+		local milliseconds = socket.gettime() * 1000
+		local to = rendy.cameras[camera_id].shake_position + vmath.vector3(math.sin(milliseconds), math.cos(milliseconds), 0) * radius
+		go.set_position(rendy.cameras[camera_id].shake_position, camera_id)
+		go.animate(camera_id, "position", go.PLAYBACK_ONCE_PINGPONG, to, go.EASING_LINEAR, shake_duration)
+	end
+	animate()
+	local animation_loop = function()
+		intensity = intensity - 1
+		if intensity > 0 then
+			animate()
+		else
+			rendy.cancel_camera_shake(camera_id)
+		end
+	end
+	rendy.cameras[camera_id].shake_timer = timer.delay(shake_duration, true, animation_loop)
+end
+
+function rendy.cancel_camera_shake(camera_id)
+	if not rendy.cameras[camera_id] then
+		print("Defold Rendy: rendy.cancel_camera_shake() -> Camera does not exist: " .. camera_id)
+		return
+	end
+	if not rendy.cameras[camera_id].shake_timer then
+		return
+	end
+	timer.cancel(rendy.cameras[camera_id].shake_timer)
+	go.cancel_animations(camera_id, "position")
+	go.set_position(rendy.cameras[camera_id].shake_position, camera_id)
+	rendy.cameras[camera_id].shake_timer = nil
+	rendy.cameras[camera_id].shake_position = nil
 end
 
 function rendy.screen_to_world(camera_id, screen_x, screen_y)
@@ -278,7 +327,6 @@ function rendy.world_to_screen(camera_id, world_position)
 	end
 	local screen_x = (ndc_position.x + 1) * rendy.cameras[camera_id].viewport_pixel_width * 0.5
 	local screen_y = (ndc_position.y + 1) * rendy.cameras[camera_id].viewport_pixel_height * 0.5
-	-- todo: screen_z
 	return screen_x, screen_y
 end
 
