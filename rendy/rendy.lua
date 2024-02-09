@@ -245,13 +245,13 @@ function rendy.get_camera_stack(screen_x, screen_y)
 	return camera_ids
 end
 
-function rendy.shake_camera(camera_id, radius, intensity, duration)
+function rendy.shake_camera(camera_id, radius, intensity, duration, scaler)
 	if not rendy.cameras[camera_id] then
 		print("Defold Rendy: rendy.shake_camera() -> Camera does not exist: " .. camera_id)
 		return
 	end
-	if radius <= 0 or intensity <= 0 or duration <= 0 then
-		print("Defold Rendy: rendy.shake_camera() -> Radius, intensity, and duration must be > 0.")
+	if intensity <= 0 then
+		print("Defold Rendy: rendy.shake_camera() -> Intensity must be > 0.")
 		return
 	end
 	if rendy.cameras[camera_id].shake_timer then
@@ -268,6 +268,7 @@ function rendy.shake_camera(camera_id, radius, intensity, duration)
 	animate()
 	local animation_loop = function()
 		intensity = intensity - 1
+		radius = radius * (scaler or 1)
 		if intensity > 0 then
 			animate()
 		else
@@ -328,6 +329,14 @@ function rendy.world_to_screen(camera_id, world_position)
 	local screen_x = (ndc_position.x + 1) * rendy.cameras[camera_id].viewport_pixel_width * 0.5
 	local screen_y = (ndc_position.y + 1) * rendy.cameras[camera_id].viewport_pixel_height * 0.5
 	return screen_x, screen_y
+end
+
+function rendy.get_display_size()
+	return vmath.vector3(rendy.display_width, rendy.display_height, 0)
+end
+
+function rendy.get_window_size()
+	return vmath.vector3(rendy.window_width, rendy.window_height, 0)
 end
 
 return rendy

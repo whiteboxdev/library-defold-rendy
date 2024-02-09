@@ -1,4 +1,4 @@
-script: "/example/main.gui_script"
+script: "/example/perspective/perspective.gui_script"
 fonts {
   name: "system_font"
   font: "/builtins/fonts/system_font.font"

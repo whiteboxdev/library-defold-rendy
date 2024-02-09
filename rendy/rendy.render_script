@@ -67,7 +67,7 @@ local predicates =
 	{
 		tags = { hash("text") },
 		object = nil
-	},
+	}
 }
 
 local clear_buffers = nil
@@ -93,11 +93,17 @@ local function apply_resize_mode_center(camera)
 	camera.viewport_pixel_y = rendy.window_height * viewport_fraction_y + margin_height * 0.5
 	camera.viewport_pixel_width = rendy.window_width * viewport_fraction_width - margin_width
 	camera.viewport_pixel_height = rendy.window_height * viewport_fraction_height - margin_height
-	local left = -camera.resolution_width * 0.5 * camera.zoom
-	local right = camera.resolution_width * 0.5 * camera.zoom
-	local bottom = -camera.resolution_height * 0.5 * camera.zoom
-	local top = camera.resolution_height * 0.5 * camera.zoom
-	camera.projection_transform = vmath.matrix4_orthographic(left, right, bottom, top, camera.z_min, camera.z_max)
+	if camera.orthographic then
+		local left = -camera.resolution_width * 0.5 * camera.zoom
+		local right = camera.resolution_width * 0.5 * camera.zoom
+		local bottom = -camera.resolution_height * 0.5 * camera.zoom
+		local top = camera.resolution_height * 0.5 * camera.zoom
+		camera.projection_transform = vmath.matrix4_orthographic(left, right, bottom, top, camera.z_min, camera.z_max)
+	else
+		local fov = math.rad(camera.field_of_view)
+		local aspect = camera.resolution_width / camera.resolution_height
+		camera.projection_transform = vmath.matrix4_perspective(fov, aspect, camera.z_min, camera.z_max)
+	end
 	camera.frustum = camera.projection_transform * camera.view_transform
 end
 
@@ -110,11 +116,17 @@ local function apply_resize_mode_expand(camera)
 	camera.viewport_pixel_y = rendy.window_height * viewport_fraction_y
 	camera.viewport_pixel_width = rendy.window_width * viewport_fraction_width
 	camera.viewport_pixel_height = rendy.window_height * viewport_fraction_height
-	local left = -rendy.window_width * 0.5 * camera.zoom
-	local right = rendy.window_width * 0.5 * camera.zoom
-	local bottom = -rendy.window_height * 0.5 * camera.zoom
-	local top = rendy.window_height * 0.5 * camera.zoom
-	camera.projection_transform = vmath.matrix4_orthographic(left, right, bottom, top, camera.z_min, camera.z_max)
+	if camera.orthographic then
+		local left = -rendy.window_width * 0.5 * camera.zoom
+		local right = rendy.window_width * 0.5 * camera.zoom
+		local bottom = -rendy.window_height * 0.5 * camera.zoom
+		local top = rendy.window_height * 0.5 * camera.zoom
+		camera.projection_transform = vmath.matrix4_orthographic(left, right, bottom, top, camera.z_min, camera.z_max)
+	else
+		local fov = math.rad(camera.field_of_view)
+		local aspect = rendy.window_width / rendy.window_height
+		camera.projection_transform = vmath.matrix4_perspective(fov, aspect, camera.z_min, camera.z_max)
+	end
 	camera.frustum = camera.projection_transform * camera.view_transform
 end
 
@@ -127,11 +139,17 @@ local function apply_resize_mode_stretch(camera)
 	camera.viewport_pixel_y = rendy.window_height * viewport_fraction_y
 	camera.viewport_pixel_width = rendy.window_width * viewport_fraction_width
 	camera.viewport_pixel_height = rendy.window_height * viewport_fraction_height
-	local left = -camera.resolution_width * 0.5 * camera.zoom
-	local right = camera.resolution_width * 0.5 * camera.zoom
-	local bottom = -camera.resolution_height * 0.5 * camera.zoom
-	local top = camera.resolution_height * 0.5 * camera.zoom
-	camera.projection_transform = vmath.matrix4_orthographic(left, right, bottom, top, camera.z_min, camera.z_max)
+	if camera.orthographic then
+		local left = -camera.resolution_width * 0.5 * camera.zoom
+		local right = camera.resolution_width * 0.5 * camera.zoom
+		local bottom = -camera.resolution_height * 0.5 * camera.zoom
+		local top = camera.resolution_height * 0.5 * camera.zoom
+		camera.projection_transform = vmath.matrix4_orthographic(left, right, bottom, top, camera.z_min, camera.z_max)
+	else
+		local fov = math.rad(camera.field_of_view)
+		local aspect = camera.resolution_width / camera.resolution_height
+		camera.projection_transform = vmath.matrix4_perspective(fov, aspect, camera.z_min, camera.z_max)
+	end
 	camera.frustum = camera.projection_transform * camera.view_transform
 end
 
