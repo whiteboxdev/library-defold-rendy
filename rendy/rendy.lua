@@ -321,11 +321,24 @@ function rendy.cancel_camera_shake(camera_id)
 	rendy.cameras[camera_id].shake_position = nil
 end
 
+-- Converts a screen position to a world position.
+-- `camera_id`: <hash>
+-- `screen_position`: <vector3>
+-- Returns a `vector3`.
 function rendy.screen_to_world(camera_id, screen_position)
 	if not is_within_viewport(rendy.cameras[camera_id], screen_position.x, screen_position.y) then
 		return
 	end
-	
+	local inverse_frustum = vmath.inv(rendy.cameras[camera_id].frustum)
+	local clip_x = (screen_position.x - rendy.cameras[camera_id].viewport_x) / rendy.cameras[camera_id].viewport_width * 2 - 1
+	local clip_y = (screen_position.y - rendy.cameras[camera_id].viewport_y) / rendy.cameras[camera_id].viewport_height * 2 - 1
+	local near_world_position = vmath.vector4(inverse_frustum * vmath.vector4(clip_x, clip_y, -1, 1))
+	local far_world_position = vmath.vector4(inverse_frustum * vmath.vector4(clip_x, clip_y, 1, 1))
+	near_world_position = near_world_position / near_world_position.w
+	far_world_position = far_world_position / far_world_position.w
+	local frustum_z = (screen_position.z - rendy.cameras[camera_id].z_min) / (rendy.cameras[camera_id].z_max - rendy.cameras[camera_id].z_min)
+	local world_position = vmath.lerp(frustum_z, near_world_position, far_world_position)
+	return vmath.vector3(world_position.x, world_position.y, world_position.z)
 end
 
 -- Converts a world position to a screen position.

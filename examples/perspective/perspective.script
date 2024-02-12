@@ -76,12 +76,12 @@ function init(self)
 end
 
 function update(self, dt)
-	-- if action_screen_dx ~= 0 or action_screen_dy ~= 0 then
-	-- 	local camera_rotation = go.get_rotation(go_rendy)
-	-- 	camera_rotation = camera_rotation * vmath.quat_rotation_x(action_screen_dy * camera_rotate_speed)
-	-- 	camera_rotation = camera_rotation * vmath.quat_rotation_y(-action_screen_dx * camera_rotate_speed)
-	-- 	go.set_rotation(camera_rotation, go_rendy)
-	-- end
+	if action_screen_dx ~= 0 or action_screen_dy ~= 0 then
+		local camera_rotation = go.get_rotation(go_rendy)
+		camera_rotation = camera_rotation * vmath.quat_rotation_x(action_screen_dy * camera_rotate_speed)
+		camera_rotation = camera_rotation * vmath.quat_rotation_y(-action_screen_dx * camera_rotate_speed)
+		go.set_rotation(camera_rotation, go_rendy)
+	end
 	local direction = vmath.vector3(keys.a + keys.d, 0, keys.w + keys.s)
 	if direction ~= vmath.vector3() then
 		local camera_position = go.get_position(go_rendy)
@@ -100,9 +100,12 @@ function update(self, dt)
 	msg.post(msg.url(nil, go_gui, "gui"), message_move_camera, message_data)
 	action_screen_dx = 0
 	action_screen_dy = 0
-	local thing = rendy.screen_to_world(go_rendy, vmath.vector3(rendy.window_width * 0.5, rendy.window_height * 0.5, 3))
-	go.set_position(thing, hash("/go"))
-	go.set_rotation(go.get_rotation(go_rendy), hash("/go"))
+	local thing = rendy.screen_to_world(go_rendy, vmath.vector3(rendy.window_width * 0.25, rendy.window_height * 0.25, 10))
+	if thing then
+		pprint(thing)
+		go.set_position(thing, hash("/go"))
+		go.set_rotation(go.get_rotation(go_rendy), hash("/go"))
+	end
 end
 
 function on_input(self, action_id, action)
