@@ -41,8 +41,13 @@ local message_window_resized = hash("window_resized")
 -- Variables
 --------------------------------------------------------------------------------
 
+-- Contains all render predicates.
+-- Each predicate consists of a table formatted like so:
+-- <string> = { tags = { hash("<string>"), ... }, object = nil }
+-- The `object` entry will store the actual predicate, which is created by calling the `render.predicate()` function.
 local predicates =
 {
+	-- Default predicates...
 	model =
 	{
 		tags = { hash("model") },
@@ -67,11 +72,18 @@ local predicates =
 	{
 		tags = { hash("text") },
 		object = nil
-	}
+	},
+	-- Custom predicates...
 }
 
+-- Default color, depth, and stencil buffer values to pass to the `render.clear()` function.
 local clear_buffers = nil
 
+-- The GUI camera is not created through the normal `rendy.create_camera()` function because:
+-- (1) it is not coupled to a game object,
+-- (2) it does not require the same data fields that a normal camera requires, and
+-- (3) it does not and should not support many of the features that a normal camera supports.
+-- There is only one GUI camera in existence, it is always active, and it has a unique resize mode that plays well with Defold's GUI component.
 local camera_gui = nil
 
 --------------------------------------------------------------------------------
@@ -270,6 +282,7 @@ function update(self, dt)
 	end
 	render.set_depth_mask(false)
 	activate_camera(camera_gui)
+	render.enable_state(render.STATE_BLEND)
 	render.enable_state(render.STATE_STENCIL_TEST)
 	render.draw(predicates.gui.object)
 	render.draw(predicates.text.object)

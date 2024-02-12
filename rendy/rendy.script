@@ -55,15 +55,20 @@ go.property("field_of_view", 45)
 -- Engine Functions
 --------------------------------------------------------------------------------
 
-function init(self)
+-- Creates a new camera that is coupled to this pre-packaged game object.
+function init()
 	rendy.create_camera(go.get_id())
 end
 
-function final(self)
+-- Destroys the camera.
+function final()
 	rendy.destroy_camera(go.get_id())
 end
 
-function update(self, dt)
+-- Synchronizes the camera's data in rendy.lua with its corresponding game object's properties.
+-- This allows for property changes and animations using the `go.set()` and `go.animate()` functions.
+-- Instead of using `go.set()` however, it is recommended to use the setter functions in rendy.lua.
+function update(self)
 	local id = go.get_id()
 	if self.active ~= rendy.cameras[id].active then
 		rendy.cameras[id].active = self.active

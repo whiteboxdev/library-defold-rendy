@@ -5,7 +5,7 @@ instances {
   position {
     x: 0.0
     y: 0.0
-    z: 5.0
+    z: 3.0
   }
   rotation {
     x: 0.0
@@ -52,7 +52,7 @@ embedded_instances {
   id: "main"
   data: "components {\n"
   "  id: \"script\"\n"
-  "  component: \"/example/perspective/perspective.script\"\n"
+  "  component: \"/examples/perspective/perspective.script\"\n"
   "  position {\n"
   "    x: 0.0\n"
   "    y: 0.0\n"
@@ -138,7 +138,7 @@ embedded_instances {
   id: "gui"
   data: "components {\n"
   "  id: \"gui\"\n"
-  "  component: \"/example/perspective/perspective.gui\"\n"
+  "  component: \"/examples/perspective/perspective.gui\"\n"
   "  position {\n"
   "    x: 0.0\n"
   "    y: 0.0\n"
@@ -168,6 +168,86 @@ embedded_instances {
   scale3 {
     x: 1.0
     y: 1.0
+    z: 1.0
+  }
+}
+embedded_instances {
+  id: "floor"
+  data: "embedded_components {\n"
+  "  id: \"sprite\"\n"
+  "  type: \"sprite\"\n"
+  "  data: \"tile_set: \\\"/builtins/graphics/particle_blob.tilesource\\\"\\n"
+  "default_animation: \\\"anim\\\"\\n"
+  "material: \\\"/builtins/materials/sprite.material\\\"\\n"
+  "blend_mode: BLEND_MODE_ALPHA\\n"
+  "\"\n"
+  "  position {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "  }\n"
+  "  rotation {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "    w: 1.0\n"
+  "  }\n"
+  "}\n"
+  ""
+  position {
+    x: 0.0
+    y: -100.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.70710677
+    y: 0.0
+    z: 0.0
+    w: 0.70710677
+  }
+  scale3 {
+    x: 10.0
+    y: 10.0
+    z: 1.0
+  }
+}
+embedded_instances {
+  id: "go"
+  data: "embedded_components {\n"
+  "  id: \"sprite\"\n"
+  "  type: \"sprite\"\n"
+  "  data: \"tile_set: \\\"/builtins/graphics/particle_blob.tilesource\\\"\\n"
+  "default_animation: \\\"anim\\\"\\n"
+  "material: \\\"/builtins/materials/sprite.material\\\"\\n"
+  "blend_mode: BLEND_MODE_ALPHA\\n"
+  "\"\n"
+  "  position {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "  }\n"
+  "  rotation {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "    w: 1.0\n"
+  "  }\n"
+  "}\n"
+  ""
+  position {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale3 {
+    x: 0.1
+    y: 0.1
     z: 1.0
   }
 }

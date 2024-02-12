@@ -1,5 +1,5 @@
 [bootstrap]
-main_collection = /example/perspective/perspective.collectionc
+main_collection = /examples/perspective/perspective.collectionc
 render = /rendy/rendy.renderc
 
 [script]

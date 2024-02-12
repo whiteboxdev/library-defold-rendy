@@ -37,14 +37,26 @@ local message_release_camera_focus = hash("release_camera_focus")
 
 local rendy = {}
 
+-- The following `rendy._` variables should not be directly accessed or manipulated by the user.
+-- They are only exposed because the rendy.render_script file needs write-access to them.
+
+-- Contains all cameras except the GUI camera, which is stored in the rendy.render_script file.
+-- { [camera_id] = <table>, ... }
 rendy.cameras = {}
 
+-- Initial width and height of the window, specified in the game.project file.
 rendy.display_width = nil
 rendy.display_height = nil
 
+-- Current width and height of the window.
 rendy.window_width = nil
 rendy.window_height = nil
 
+-- Checks if a screen position in within a camera's viewport.
+-- `camera`: <table>
+-- `screen_x`: <number>
+-- `screen_y`: <number>
+-- Returns a `bool`.
 local function is_within_viewport(camera, screen_x, screen_y)
 	return
 		camera.viewport_pixel_x <= screen_x and
@@ -53,6 +65,9 @@ local function is_within_viewport(camera, screen_x, screen_y)
 		screen_y <= camera.viewport_pixel_y + camera.viewport_pixel_height
 end
 
+-- Checks if an NDC position is within the standard renderable NDC cube.
+-- `ndc_position`: <vector3>
+-- Returns a `bool`.
 local function is_within_ndc_cube(ndc_position)
 	return
 		-1 <= ndc_position.x and ndc_position.x <= 1 and
@@ -64,11 +79,11 @@ end
 -- Module Functions
 --------------------------------------------------------------------------------
 
+-- Creates a camera.
+-- This function is called automatically by pre-packaged rendy game objects.
+-- `camera_id`: <hash>
+-- Returns `nil`.
 function rendy.create_camera(camera_id)
-	if rendy.cameras[camera_id] then
-		print("Defold Rendy: rendy.create_camera() -> Camera already exists: " .. camera_id)
-		return
-	end
 	local camera_url = msg.url(nil, camera_id, "camera")
 	local script_url = msg.url(nil, camera_id, "script")
 	rendy.cameras[camera_id] =
@@ -105,38 +120,40 @@ function rendy.create_camera(camera_id)
 	msg.post(camera_url, message_acquire_camera_focus)
 end
 
+-- Destroys a camera.
+-- This function is called automatically by pre-packaged rendy game objects.
+-- `camera_id`: <hash>
+-- Returns `nil`.
 function rendy.destroy_camera(camera_id)
-	if not rendy.cameras[camera_id] then
-		print("Defold Rendy: rendy.destroy_camera() -> Camera does not exist: " .. camera_id)
-		return
-	end
 	msg.post(rendy.cameras[camera_id].camera_url, message_release_camera_focus)
 	rendy.cameras[camera_id] = nil
 end
 
+-- Sets a camera's active state.
+-- If a camera is inactive, then its configuration remains in memory, but it is not drawn by the render script.
+-- `camera_id`: <hash>
+-- `flag`: <bool>
+-- Returns `nil`.
 function rendy.set_camera_active(camera_id, flag)
-	if not rendy.cameras[camera_id] then
-		print("Defold Rendy: rendy.set_camera_active() -> Camera does not exist: " .. camera_id)
-		return
-	end
 	go.set(rendy.cameras[camera_id].script_url, "active", flag)
 	rendy.cameras[camera_id].active = flag
 end
 
+-- Sets a camera's projection transform to orthographic or perspective.
+-- Orthographic projections are usually used for 2D worlds.
+-- Perspective projections are usually used for 3D worlds.
+-- `camera_id`: <hash>
+-- `flag`: <bool>
+-- Returns `nil`.
 function rendy.set_camera_orthographic(camera_id, flag)
-	if not rendy.cameras[camera_id] then
-		print("Defold Rendy: rendy.set_camera_orthographic() -> Camera does not exist: " .. camera_id)
-		return
-	end
 	go.set(rendy.cameras[camera_id].script_url, "orthographic", flag)
 	rendy.cameras[camera_id].orthographic = flag
 end
 
+-- Sets a camera's resize mode to center.
+-- `camera_id`: <hash>
+-- Returns `nil`.
 function rendy.set_camera_resize_mode_center(camera_id)
-	if not rendy.cameras[camera_id] then
-		print("Defold Rendy: rendy.set_camera_resize_mode_center() -> Camera does not exist: " .. camera_id)
-		return
-	end
 	go.set(rendy.cameras[camera_id].script_url, "resize_mode_center", true)
 	go.set(rendy.cameras[camera_id].script_url, "resize_mode_expand", false)
 	go.set(rendy.cameras[camera_id].script_url, "resize_mode_stretch", false)
@@ -145,11 +162,10 @@ function rendy.set_camera_resize_mode_center(camera_id)
 	rendy.cameras[camera_id].resize_mode_stretch = false
 end
 
+-- Sets a camera's resize mode to expand.
+-- `camera_id`: <hash>
+-- Returns `nil`.
 function rendy.set_camera_resize_mode_expand(camera_id)
-	if not rendy.cameras[camera_id] then
-		print("Defold Rendy: rendy.set_camera_resize_mode_expand() -> Camera does not exist: " .. camera_id)
-		return
-	end
 	go.set(rendy.cameras[camera_id].script_url, "resize_mode_center", false)
 	go.set(rendy.cameras[camera_id].script_url, "resize_mode_expand", true)
 	go.set(rendy.cameras[camera_id].script_url, "resize_mode_stretch", false)
@@ -158,11 +174,10 @@ function rendy.set_camera_resize_mode_expand(camera_id)
 	rendy.cameras[camera_id].resize_mode_stretch = false
 end
 
+-- Sets a camera's resize mode to stretch.
+-- `camera_id`: <hash>
+-- Returns `nil`.
 function rendy.set_camera_resize_mode_stretch(camera_id)
-	if not rendy.cameras[camera_id] then
-		print("Defold Rendy: rendy.set_camera_resize_mode_stretch() -> Camera does not exist: " .. camera_id)
-		return
-	end
 	go.set(rendy.cameras[camera_id].script_url, "resize_mode_center", false)
 	go.set(rendy.cameras[camera_id].script_url, "resize_mode_expand", false)
 	go.set(rendy.cameras[camera_id].script_url, "resize_mode_stretch", true)
@@ -171,20 +186,24 @@ function rendy.set_camera_resize_mode_stretch(camera_id)
 	rendy.cameras[camera_id].resize_mode_stretch = true
 end
 
+-- Sets a camera's render order.
+-- Greater orders are drawn on top of lesser orders.
+-- `camera_id`: <hash>
+-- `order`: <number>
+-- Returns `nil`.
 function rendy.set_camera_order(camera_id, order)
-	if not rendy.cameras[camera_id] then
-		print("Defold Rendy: rendy.set_camera_order() -> Camera does not exist: " .. camera_id)
-		return
-	end
 	go.set(rendy.cameras[camera_id].script_url, "order", order)
 	rendy.cameras[camera_id].order = order
 end
 
+-- Sets a camera's viewport.
+-- `camera_id`: <hash>
+-- `x`: <number>
+-- `y`: <number>
+-- `width`: <number>
+-- `height`: <number>
+-- Returns `nil`.
 function rendy.set_camera_viewport(camera_id, x, y, width, height)
-	if not rendy.cameras[camera_id] then
-		print("Defold Rendy: rendy.set_camera_viewport() -> Camera does not exist: " .. camera_id)
-		return
-	end
 	go.set(rendy.cameras[camera_id].script_url, "viewport_x", x)
 	go.set(rendy.cameras[camera_id].script_url, "viewport_y", y)
 	go.set(rendy.cameras[camera_id].script_url, "viewport_width", width)
@@ -195,46 +214,56 @@ function rendy.set_camera_viewport(camera_id, x, y, width, height)
 	rendy.cameras[camera_id].viewport_height = viewport_height
 end
 
+-- Sets a camera's resolution.
+-- `camera_id`: <hash>
+-- `width`: <number>
+-- `height`: <number>
+-- Returns `nil`.
 function rendy.set_camera_resolution(camera_id, width, height)
-	if not rendy.cameras[camera_id] then
-		print("Defold Rendy: rendy.set_camera_resolution() -> Camera does not exist: " .. camera_id)
-		return
-	end
 	go.set(rendy.cameras[camera_id].script_url, "resolution_width", width)
 	go.set(rendy.cameras[camera_id].script_url, "resolution_height", height)
 	rendy.cameras[camera_id].resolution_width = width
 	rendy.cameras[camera_id].resolution_height = height
 end
 
+-- Sets a camera's near and far clipping planes.
+-- Orthographic cameras usually have a range of [-1, 1].
+-- Perspective cameras usually have a range of [0.1, 1000].
+-- `camera_id`: <hash>
+-- `z_min`: <number>
+-- `z_max`: <number>
+-- Returns `nil`.
 function rendy.set_camera_range(camera_id, z_min, z_max)
-	if not rendy.cameras[camera_id] then
-		print("Defold Rendy: rendy.set_camera_range() -> Camera does not exist: " .. camera_id)
-		return
-	end
 	go.set(rendy.cameras[camera_id].script_url, "z_min", z_min)
 	go.set(rendy.cameras[camera_id].script_url, "z_max", z_max)
 	rendy.cameras[camera_id].z_min = z_min
 	rendy.cameras[camera_id].z_max = z_max
 end
 
+-- Sets an orthographic camera's zoom.
+-- If the zoom factor is < 1, then the camera will zoom in.
+-- If the zoom factor is > 1, then the camera will zoom out.
+-- `camera_id`: <hash>
+-- `zoom`: <number>
+-- Returns `nil`.
 function rendy.set_camera_zoom(camera_id, zoom)
-	if not rendy.cameras[camera_id] then
-		print("Defold Rendy: rendy.set_camera_zoom() -> Camera does not exist: " .. camera_id)
-		return
-	end
 	go.set(rendy.cameras[camera_id].script_url, "zoom", zoom)
 	rendy.cameras[camera_id].zoom = zoom
 end
 
+-- Sets a perspective camera's field of view.
+-- `camera_id`: <hash>
+-- `field_of_view`: <number>
+-- Returns `nil`.
 function rendy.set_camera_field_of_view(camera_id, field_of_view)
-	if not rendy.cameras[camera_id] then
-		print("Defold Rendy: rendy.set_camera_field_of_view() -> Camera does not exist: " .. camera_id)
-		return
-	end
 	go.set(rendy.cameras[camera_id].script_url, "field_of_view", field_of_view)
 	rendy.cameras[camera_id].field_of_view = field_of_view
 end
 
+-- Gets the camera ids whose viewports intersect with a screen position.
+-- `screen_x`: <number>
+-- `screen_y`: <number>
+-- Returns a table.
 function rendy.get_camera_stack(screen_x, screen_y)
 	local camera_ids = {}
 	for camera_id, camera in pairs(rendy.cameras) do
@@ -245,15 +274,12 @@ function rendy.get_camera_stack(screen_x, screen_y)
 	return camera_ids
 end
 
+-- Starts a camera shake animation.
+-- If the camera is already shaking, then the animation is cancelled and restarted.
+-- `camera_id`: <hash>
+-- `radius`: <number>
+-- Returns `nil`.
 function rendy.shake_camera(camera_id, radius, intensity, duration, scaler)
-	if not rendy.cameras[camera_id] then
-		print("Defold Rendy: rendy.shake_camera() -> Camera does not exist: " .. camera_id)
-		return
-	end
-	if intensity <= 0 then
-		print("Defold Rendy: rendy.shake_camera() -> Intensity must be > 0.")
-		return
-	end
 	if rendy.cameras[camera_id].shake_timer then
 		rendy.cancel_camera_shake(camera_id)
 	end
@@ -261,7 +287,10 @@ function rendy.shake_camera(camera_id, radius, intensity, duration, scaler)
 	local shake_duration = duration / intensity
 	local animate = function()
 		local milliseconds = socket.gettime() * 1000
-		local to = rendy.cameras[camera_id].shake_position + vmath.vector3(math.sin(milliseconds), math.cos(milliseconds), 0) * radius
+		local position_offset_x = math.sin(milliseconds)
+		local position_offset_y = math.cos(milliseconds)
+		local position_offset_z = position_offset_x * position_offset_y
+		local to = rendy.cameras[camera_id].shake_position + vmath.vector3(position_offset_x, position_offset_y, position_offset_z) * radius
 		go.set_position(rendy.cameras[camera_id].shake_position, camera_id)
 		go.animate(camera_id, "position", go.PLAYBACK_ONCE_PINGPONG, to, go.EASING_LINEAR, shake_duration)
 	end
@@ -278,11 +307,10 @@ function rendy.shake_camera(camera_id, radius, intensity, duration, scaler)
 	rendy.cameras[camera_id].shake_timer = timer.delay(shake_duration, true, animation_loop)
 end
 
+-- Cancels an ongoing camera shake animation.
+-- `camera_id`: <hash>
+-- Returns `nil`.
 function rendy.cancel_camera_shake(camera_id)
-	if not rendy.cameras[camera_id] then
-		print("Defold Rendy: rendy.cancel_camera_shake() -> Camera does not exist: " .. camera_id)
-		return
-	end
 	if not rendy.cameras[camera_id].shake_timer then
 		return
 	end
@@ -293,36 +321,19 @@ function rendy.cancel_camera_shake(camera_id)
 	rendy.cameras[camera_id].shake_position = nil
 end
 
-function rendy.screen_to_world(camera_id, screen_x, screen_y)
-	if not rendy.cameras[camera_id] then
-		print("Defold Rendy: rendy.screen_to_world() -> Camera does not exist: " .. camera_id)
+function rendy.screen_to_world(camera_id, screen_position)
+	if not is_within_viewport(rendy.cameras[camera_id], screen_position.x, screen_position.y) then
 		return
 	end
-	if not is_within_viewport(rendy.cameras[camera_id], screen_x, screen_y) then
-		return
-	end
-	local camera_world_position = go.get_world_position(camera_id)
-	local camera_world_rotation = go.get_world_rotation(camera_id)
-	local dx_from_viewport_center = screen_x - rendy.cameras[camera_id].viewport_pixel_x - rendy.cameras[camera_id].viewport_pixel_width * 0.5
-	local dy_from_viewport_center = screen_y - rendy.cameras[camera_id].viewport_pixel_y - rendy.cameras[camera_id].viewport_pixel_height * 0.5
-	local viewport_fraction_width = rendy.cameras[camera_id].viewport_width / rendy.display_width
-	local viewport_fraction_height = rendy.cameras[camera_id].viewport_height / rendy.display_height
-	local viewport_width_compression = 1 / viewport_fraction_width
-	local viewport_height_compression = 1 / viewport_fraction_height
-	local viewport_width_ratio = rendy.cameras[camera_id].resize_mode_expand and 1 or rendy.cameras[camera_id].viewport_width / rendy.cameras[camera_id].viewport_pixel_width
-	local viewport_height_ratio = rendy.cameras[camera_id].resize_mode_expand and 1 or rendy.cameras[camera_id].viewport_height / rendy.cameras[camera_id].viewport_pixel_height
-	local world_x = dx_from_viewport_center * viewport_width_compression * viewport_width_ratio * rendy.cameras[camera_id].zoom + camera_world_position.x
-	local world_y = dy_from_viewport_center * viewport_height_compression * viewport_height_ratio * rendy.cameras[camera_id].zoom + camera_world_position.y
-	local world_position = vmath.rotate(camera_world_rotation, vmath.vector3(world_x, world_y, 0))
-	return world_position.x, world_position.y
+	
 end
 
+-- Converts a world position to a screen position.
+-- `camera_id`: <hash>
+-- `world_position`: <vector3>
+-- Returns two `number`s.
 function rendy.world_to_screen(camera_id, world_position)
-	if not rendy.cameras[camera_id] then
-		print("Defold Rendy: rendy.world_to_screen() -> Camera does not exist: " .. camera_id)
-		return
-	end
-	local ndc_position = rendy.cameras[camera_id].frustum * vmath.vector4(world_position.x, world_position.y, world_position.z, 0)
+	local ndc_position = rendy.cameras[camera_id].frustum * vmath.vector4(world_position.x, world_position.y, world_position.z, 1) / rendy.cameras[camera_id].frustum.m3.w
 	if not is_within_ndc_cube(ndc_position) then
 		return
 	end
@@ -331,10 +342,14 @@ function rendy.world_to_screen(camera_id, world_position)
 	return screen_x, screen_y
 end
 
+-- Gets the initial window size, specified in the game.project file.
+-- Returns a `vector3`.
 function rendy.get_display_size()
 	return vmath.vector3(rendy.display_width, rendy.display_height, 0)
 end
 
+-- Gets the current window size.
+-- Returns a `vector3`.
 function rendy.get_window_size()
 	return vmath.vector3(rendy.window_width, rendy.window_height, 0)
 end
