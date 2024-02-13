@@ -43,8 +43,8 @@ local message_window_resized = hash("window_resized")
 
 -- Contains all render predicates.
 -- Each predicate consists of a table formatted like so:
--- <string> = { tags = { hash("<string>"), ... }, object = nil }
--- The `object` entry will store the actual predicate, which is created by calling the `render.predicate()` function.
+-- <predicate_name> = { tags = { hash("<predicate_name>"), ... }, object = nil }
+-- The object entry will store the actual predicate, which is created by calling `render.predicate()`.
 local predicates =
 {
 	-- Default predicates...
@@ -76,10 +76,10 @@ local predicates =
 	-- Custom predicates...
 }
 
--- Default color, depth, and stencil buffer values to pass to the `render.clear()` function.
+-- Default color, depth, and stencil buffer values that are passed to `render.clear()`.
 local clear_buffers = nil
 
--- The GUI camera is not created through the normal `rendy.create_camera()` function because:
+-- The GUI camera is not created through `rendy.create_camera()` because:
 -- (1) it is not coupled to a game object,
 -- (2) it does not require the same data fields that a normal camera requires, and
 -- (3) it does not and should not support many of the features that a normal camera supports.
@@ -201,41 +201,6 @@ local function activate_camera(camera)
 	render.set_projection(camera.projection_transform)
 end
 
-local function create_predicates()
-	for _, predicate in pairs(predicates) do
-		predicate.object = render.predicate(predicate.tags)
-	end
-end
-
-local function create_camera_gui()
-	camera_gui =
-	{
-		viewport_pixel_x = 0,
-		viewport_pixel_y = 0,
-		viewport_pixel_width = 0,
-		viewport_pixel_height = 0,
-		view_transform = vmath.matrix4(),
-		projection_transform = vmath.matrix4(),
-		frustum = vmath.matrix4()
-	}
-	apply_resize_mode_gui()
-end
-
-local function create_clear_buffers()
-	local clear_color_red = sys.get_config_number("render.clear_color_red", 0)
-	local clear_color_green = sys.get_config_number("render.clear_color_green", 0)
-	local clear_color_blue = sys.get_config_number("render.clear_color_blue", 0)
-	local clear_color_alpha = sys.get_config_number("render.clear_color_alpha", 0)
-	local clear_color = vmath.vector4(clear_color_red, clear_color_green, clear_color_blue, clear_color_alpha)
-	clear_buffers =
-	{
-		[render.BUFFER_COLOR_BIT] = clear_color,
-		[render.BUFFER_DEPTH_BIT] = 1,
-		[render.BUFFER_STENCIL_BIT] = 0
-	}
-end
-	
-
 local function get_ordered_camera_ids()
 	local ids = {}
 	for id, camera in pairs(rendy.cameras) do
@@ -253,9 +218,31 @@ function init(self)
 	rendy.display_height = sys.get_config_int("display.height")
 	rendy.window_width = render.get_window_width()
 	rendy.window_height = render.get_window_height()
-	create_predicates()
-	create_clear_buffers()
-	create_camera_gui()
+	for _, predicate in pairs(predicates) do
+		predicate.object = render.predicate(predicate.tags)
+	end
+	camera_gui =
+	{
+		viewport_pixel_x = 0,
+		viewport_pixel_y = 0,
+		viewport_pixel_width = 0,
+		viewport_pixel_height = 0,
+		view_transform = vmath.matrix4(),
+		projection_transform = vmath.matrix4(),
+		frustum = vmath.matrix4()
+	}
+	apply_resize_mode_gui()
+	local clear_color_red = sys.get_config_number("render.clear_color_red", 0)
+	local clear_color_green = sys.get_config_number("render.clear_color_green", 0)
+	local clear_color_blue = sys.get_config_number("render.clear_color_blue", 0)
+	local clear_color_alpha = sys.get_config_number("render.clear_color_alpha", 0)
+	local clear_color = vmath.vector4(clear_color_red, clear_color_green, clear_color_blue, clear_color_alpha)
+	clear_buffers =
+	{
+		[render.BUFFER_COLOR_BIT] = clear_color,
+		[render.BUFFER_DEPTH_BIT] = 1,
+		[render.BUFFER_STENCIL_BIT] = 0
+	}
 end
 
 function update(self, dt)
