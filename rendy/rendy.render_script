@@ -47,7 +47,7 @@ local message_window_resized = hash("window_resized")
 -- The object entry will store the actual predicate, which is created by calling `render.predicate()`.
 local predicates =
 {
-	-- Default predicates...
+	-- Declare predicates that come shipped with default Defold components.
 	model =
 	{
 		tags = { hash("model") },
@@ -73,7 +73,7 @@ local predicates =
 		tags = { hash("text") },
 		object = nil
 	},
-	-- Custom predicates...
+	-- Declare custom predicates.
 }
 
 -- Default color, depth, and stencil buffer values that are passed to `render.clear()`.
@@ -90,6 +90,9 @@ local camera_gui = nil
 -- Local Functions
 --------------------------------------------------------------------------------
 
+-- Applies the center resize mode to a camera.
+-- This resize mode maintains the aspect ratio of the viewport and projection,
+-- while maximizing its size relative to the size of the window.
 local function apply_resize_mode_center(camera)
 	local window_width_ratio = rendy.window_width / rendy.window_height
 	local window_height_ratio = rendy.window_height / rendy.window_width
@@ -119,6 +122,9 @@ local function apply_resize_mode_center(camera)
 	camera.frustum = camera.projection_transform * camera.view_transform
 end
 
+-- Applies the expand resize mode to a camera.
+-- This resize mode stretches the viewport relative to the size of the window,
+-- but expands the projection such that more or less of the game world is visible.
 local function apply_resize_mode_expand(camera)
 	local viewport_fraction_x = camera.viewport_x / rendy.display_width
 	local viewport_fraction_y = camera.viewport_y / rendy.display_height
@@ -142,6 +148,8 @@ local function apply_resize_mode_expand(camera)
 	camera.frustum = camera.projection_transform * camera.view_transform
 end
 
+-- Applies the stretch resize mode to a camera.
+-- This resize mode stretches the viewport and projection relative to the size of the window.
 local function apply_resize_mode_stretch(camera)
 	local viewport_fraction_x = camera.viewport_x / rendy.display_width
 	local viewport_fraction_y = camera.viewport_y / rendy.display_height
@@ -165,6 +173,8 @@ local function apply_resize_mode_stretch(camera)
 	camera.frustum = camera.projection_transform * camera.view_transform
 end
 
+-- Applies the GUI resize mode to the GUI camera.
+-- This resize mode stretches the camera's viewport and projection to the exact size of the window.
 local function apply_resize_mode_gui()
 	camera_gui.viewport_pixel_x = 0
 	camera_gui.viewport_pixel_y = 0
@@ -174,6 +184,7 @@ local function apply_resize_mode_gui()
 	camera_gui.frustum = camera_gui.projection_transform * camera_gui.view_transform
 end
 
+-- Responds to the `set_view_projection` message, which is sent by each camera once per frame.
 local function set_view_projection_callback(camera_url, view_transform)
 	for _, camera in pairs(rendy.cameras) do
 		if camera_url == camera.camera_url then
@@ -189,18 +200,21 @@ local function set_view_projection_callback(camera_url, view_transform)
 	end
 end
 
+-- Responds to a `window_resized` message.
 local function window_resized_callback()
 	rendy.window_width = render.get_window_width()
 	rendy.window_height = render.get_window_height()
 	apply_resize_mode_gui()
 end
 
+-- Activates a camera.
 local function activate_camera(camera)
 	render.set_viewport(camera.viewport_pixel_x, camera.viewport_pixel_y, camera.viewport_pixel_width, camera.viewport_pixel_height)
 	render.set_view(camera.view_transform)
 	render.set_projection(camera.projection_transform)
 end
 
+-- Gets a sorted list of camera ids based on their render orders.
 local function get_ordered_camera_ids()
 	local ids = {}
 	for id, camera in pairs(rendy.cameras) do
@@ -214,13 +228,16 @@ end
 --------------------------------------------------------------------------------
 
 function init(self)
+	-- Initialize Rendy variables.
 	rendy.display_width = sys.get_config_int("display.width")
 	rendy.display_height = sys.get_config_int("display.height")
 	rendy.window_width = render.get_window_width()
 	rendy.window_height = render.get_window_height()
+	-- Create render predicates.
 	for _, predicate in pairs(predicates) do
 		predicate.object = render.predicate(predicate.tags)
 	end
+	-- Create and update the GUI camera.
 	camera_gui =
 	{
 		viewport_pixel_x = 0,
@@ -232,6 +249,7 @@ function init(self)
 		frustum = vmath.matrix4()
 	}
 	apply_resize_mode_gui()
+	-- Set default values for the color, depth, and stencil buffers.
 	local clear_color_red = sys.get_config_number("render.clear_color_red", 0)
 	local clear_color_green = sys.get_config_number("render.clear_color_green", 0)
 	local clear_color_blue = sys.get_config_number("render.clear_color_blue", 0)
@@ -246,29 +264,45 @@ function init(self)
 end
 
 function update(self, dt)
+	-- Enable writing to the depth and stencil buffers, and set the default blend function.
+	-- Writing to the color buffer is always enabled.
 	render.set_depth_mask(true)
 	render.set_stencil_mask(0xff)
+	render.set_blend_func(render.BLEND_SRC_ALPHA, render.BLEND_ONE_MINUS_SRC_ALPHA)
+	-- Write default values to the color, depth, and stencil buffers.
 	render.clear(clear_buffers)
+	-- Render each camera according to its render order.
 	local ordered_camera_ids = get_ordered_camera_ids()
 	for i = 1, #ordered_camera_ids do
-		local camera = rendy.cameras[ordered_camera_ids[i]]
+		local camera_id = ordered_camera_ids[i]
+		local camera = rendy.cameras[camera_id]
+		-- Only render this camera if it is active.
 		if camera.active then
 			activate_camera(camera)
+			-- First, render 3D objects.
+			-- Enable depth testing and facing culling to discard non-visible fragments.
+			-- Blending is not supported for 3D objects because Defold does not sort them from back to front, which is a requirement for proper blending.
 			render.enable_state(render.STATE_DEPTH_TEST)
 			render.enable_state(render.STATE_CULL_FACE)
 			render.draw(predicates.model.object, { frustum = camera.frustum })
 			render.disable_state(render.STATE_CULL_FACE)
+			render.disable_state(render.STATE_DEPTH_TEST)
 			render.set_depth_mask(false)
-			render.set_blend_func(render.BLEND_SRC_ALPHA, render.BLEND_ONE_MINUS_SRC_ALPHA)
+			-- Second, render 2D objects.
+			-- Disable depth testing because Defold sorts 2D objects by their z positions from back to front.
+			-- Enable blending to support partially transparent objects.
 			render.enable_state(render.STATE_BLEND)
 			render.draw(predicates.tile.object, { frustum = camera.frustum })
 			render.draw(predicates.particle.object, { frustum = camera.frustum })
 			render.disable_state(render.STATE_BLEND)
-			render.disable_state(render.STATE_DEPTH_TEST)
 		end
 	end
-	render.set_depth_mask(false)
+	-- Render the GUI camera on top of all other cameras.
+	-- Disable depth testing because Defold sorts 2D objects by their z positions from back to front.
+	-- Enable blending to support partially transparent objects.
+	-- Enable stencil testing.
 	activate_camera(camera_gui)
+	render.set_depth_mask(false)
 	render.enable_state(render.STATE_BLEND)
 	render.enable_state(render.STATE_STENCIL_TEST)
 	render.draw(predicates.gui.object)
@@ -278,8 +312,10 @@ function update(self, dt)
 end
 
 function on_message(self, message_id, message, sender)
+	-- Sent once per frame by each camera.
 	if message_id == message_set_view_projection then
 		set_view_projection_callback(sender, message.view)
+	-- Sent whenever the window size changes.
 	elseif message_id == message_window_resized then
 		window_resized_callback()
 	end

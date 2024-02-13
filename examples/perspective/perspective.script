@@ -48,7 +48,7 @@ local go_gui = hash("/gui")
 local go_logo = hash("/logo")
 local go_rendy = hash("/rendy")
 
-local camera_move_speed = 7
+local camera_move_speed = 5
 local camera_rotate_speed = 0.002
 
 --------------------------------------------------------------------------------

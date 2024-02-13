@@ -34,21 +34,38 @@ local rendy = require "rendy.rendy"
 -- Properties
 --------------------------------------------------------------------------------
 
+-- Active state.
 go.property("active", true)
+
+-- Projection type.
 go.property("orthographic", true)
+
+-- Resize mode.
 go.property("resize_mode_center", true)
 go.property("resize_mode_expand", false)
 go.property("resize_mode_stretch", false)
+
+-- Render order relative to other cameras.
 go.property("order", 1)
+
+-- Viewport in pixels.
 go.property("viewport_x", 0)
 go.property("viewport_y", 0)
 go.property("viewport_width", 960)
 go.property("viewport_height", 540)
+
+-- Resolution in pixels.
 go.property("resolution_width", 960)
 go.property("resolution_height", 540)
+
+-- Near and far planes of the frustum.
 go.property("z_min", -1)
 go.property("z_max", 1)
+
+-- Zoom factor of an orthographic projection.
 go.property("zoom", 1)
+
+-- Field of view of a perspective projection.
 go.property("field_of_view", 45)
 
 --------------------------------------------------------------------------------
@@ -65,7 +82,6 @@ end
 
 -- Synchronizes the camera's data in rendy.lua with its corresponding game object's properties.
 -- This allows for property changes and animations using the `go.set()` and `go.animate()` functions.
--- Instead of using `go.set()` however, it is recommended to use the setter functions in the rendy.lua file.
 function update(self)
 	local id = go.get_id()
 	if self.active ~= rendy.cameras[id].active then
