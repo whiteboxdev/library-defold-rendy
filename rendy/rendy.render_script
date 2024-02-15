@@ -218,7 +218,7 @@ end
 local function get_ordered_camera_ids()
 	local ids = {}
 	for id, camera in pairs(rendy.cameras) do
-		ids[camera.order] = id
+		ids[camera.render_order] = id
 	end
 	return ids
 end

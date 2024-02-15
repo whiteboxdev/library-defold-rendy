@@ -1,6 +1,6 @@
 name: "collection_orthographic"
 instances {
-  id: "rendy_top_left"
+  id: "rendy"
   prototype: "/rendy/rendy.go"
   position {
     x: 0.0
@@ -16,124 +16,13 @@ instances {
   component_properties {
     id: "script"
     properties {
-      id: "viewport_y"
-      value: "270.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "viewport_width"
-      value: "480.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "viewport_height"
-      value: "270.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-  }
-  scale3 {
-    x: 1.0
-    y: 1.0
-    z: 1.0
-  }
-}
-instances {
-  id: "rendy_top_right"
-  prototype: "/rendy/rendy.go"
-  position {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
-  }
-  component_properties {
-    id: "script"
-    properties {
-      id: "resize_mode_center"
-      value: "false"
-      type: PROPERTY_TYPE_BOOLEAN
-    }
-    properties {
-      id: "resize_mode_expand"
+      id: "experimental_controls"
       value: "true"
       type: PROPERTY_TYPE_BOOLEAN
     }
     properties {
-      id: "order"
-      value: "2.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "viewport_x"
-      value: "480.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "viewport_y"
-      value: "270.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "viewport_width"
-      value: "480.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "viewport_height"
-      value: "270.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-  }
-  scale3 {
-    x: 1.0
-    y: 1.0
-    z: 1.0
-  }
-}
-instances {
-  id: "rendy_bottom_left"
-  prototype: "/rendy/rendy.go"
-  position {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
-  }
-  component_properties {
-    id: "script"
-    properties {
-      id: "resize_mode_center"
-      value: "false"
-      type: PROPERTY_TYPE_BOOLEAN
-    }
-    properties {
-      id: "resize_mode_stretch"
-      value: "true"
-      type: PROPERTY_TYPE_BOOLEAN
-    }
-    properties {
-      id: "order"
-      value: "3.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "viewport_width"
-      value: "480.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "viewport_height"
-      value: "270.0"
+      id: "experimental_speed"
+      value: "540.0"
       type: PROPERTY_TYPE_NUMBER
     }
   }
@@ -145,47 +34,7 @@ instances {
 }
 scale_along_z: 0
 embedded_instances {
-  id: "logo"
-  data: "embedded_components {\n"
-  "  id: \"sprite\"\n"
-  "  type: \"sprite\"\n"
-  "  data: \"tile_set: \\\"/examples/orthographic/orthographic.atlas\\\"\\n"
-  "default_animation: \\\"logo_256\\\"\\n"
-  "material: \\\"/builtins/materials/sprite.material\\\"\\n"
-  "blend_mode: BLEND_MODE_ALPHA\\n"
-  "\"\n"
-  "  position {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "  }\n"
-  "  rotation {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "    w: 1.0\n"
-  "  }\n"
-  "}\n"
-  ""
-  position {
-    x: 0.0
-    y: 0.0
-    z: 0.5
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
-  }
-  scale3 {
-    x: 1.0
-    y: 1.0
-    z: 1.0
-  }
-}
-embedded_instances {
-  id: "main"
+  id: "script"
   data: "components {\n"
   "  id: \"script\"\n"
   "  component: \"/examples/orthographic/orthographic.script\"\n"
@@ -222,14 +71,17 @@ embedded_instances {
   }
 }
 embedded_instances {
-  id: "particle"
+  id: "logo"
   data: "embedded_components {\n"
   "  id: \"sprite\"\n"
   "  type: \"sprite\"\n"
-  "  data: \"tile_set: \\\"/examples/orthographic/orthographic.atlas\\\"\\n"
-  "default_animation: \\\"particle_blob\\\"\\n"
+  "  data: \"default_animation: \\\"logo_256\\\"\\n"
   "material: \\\"/builtins/materials/sprite.material\\\"\\n"
   "blend_mode: BLEND_MODE_ALPHA\\n"
+  "textures {\\n"
+  "  sampler: \\\"texture_sampler\\\"\\n"
+  "  texture: \\\"/examples/orthographic/orthographic.atlas\\\"\\n"
+  "}\\n"
   "\"\n"
   "  position {\n"
   "    x: 0.0\n"
@@ -247,7 +99,7 @@ embedded_instances {
   position {
     x: 0.0
     y: 0.0
-    z: -0.5
+    z: 0.0
   }
   rotation {
     x: 0.0
@@ -256,16 +108,49 @@ embedded_instances {
     w: 1.0
   }
   scale3 {
-    x: 100.0
-    y: 100.0
+    x: 1.0
+    y: 1.0
     z: 1.0
   }
 }
 embedded_instances {
-  id: "gui"
-  data: "components {\n"
-  "  id: \"gui\"\n"
-  "  component: \"/examples/orthographic/orthographic.gui\"\n"
+  id: "label"
+  data: "embedded_components {\n"
+  "  id: \"label\"\n"
+  "  type: \"label\"\n"
+  "  data: \"size {\\n"
+  "  x: 480.0\\n"
+  "  y: 64.0\\n"
+  "  z: 0.0\\n"
+  "  w: 0.0\\n"
+  "}\\n"
+  "color {\\n"
+  "  x: 0.0\\n"
+  "  y: 0.0\\n"
+  "  z: 0.0\\n"
+  "  w: 1.0\\n"
+  "}\\n"
+  "outline {\\n"
+  "  x: 0.0\\n"
+  "  y: 0.0\\n"
+  "  z: 0.0\\n"
+  "  w: 1.0\\n"
+  "}\\n"
+  "shadow {\\n"
+  "  x: 0.0\\n"
+  "  y: 0.0\\n"
+  "  z: 0.0\\n"
+  "  w: 1.0\\n"
+  "}\\n"
+  "leading: 1.0\\n"
+  "tracking: 0.0\\n"
+  "pivot: PIVOT_CENTER\\n"
+  "blend_mode: BLEND_MODE_ALPHA\\n"
+  "line_break: true\\n"
+  "text: \\\"\\\"\\n"
+  "font: \\\"/builtins/fonts/system_font.font\\\"\\n"
+  "material: \\\"/builtins/fonts/label.material\\\"\\n"
+  "\"\n"
   "  position {\n"
   "    x: 0.0\n"
   "    y: 0.0\n"
@@ -277,14 +162,60 @@ embedded_instances {
   "    z: 0.0\n"
   "    w: 1.0\n"
   "  }\n"
-  "  property_decls {\n"
+  "}\n"
+  ""
+  position {
+    x: 0.0
+    y: 202.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale3 {
+    x: 2.0
+    y: 2.0
+    z: 1.0
+  }
+}
+embedded_instances {
+  id: "background"
+  data: "embedded_components {\n"
+  "  id: \"sprite\"\n"
+  "  type: \"sprite\"\n"
+  "  data: \"default_animation: \\\"anim\\\"\\n"
+  "material: \\\"/builtins/materials/sprite.material\\\"\\n"
+  "blend_mode: BLEND_MODE_ALPHA\\n"
+  "textures {\\n"
+  "  sampler: \\\"texture_sampler\\\"\\n"
+  "  texture: \\\"/builtins/graphics/particle_blob.tilesource\\\"\\n"
+  "}\\n"
+  "\"\n"
+  "  position {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "  }\n"
+  "  rotation {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "    w: 1.0\n"
+  "  }\n"
+  "  scale {\n"
+  "    x: 100.0\n"
+  "    y: 100.0\n"
+  "    z: 1.0\n"
   "  }\n"
   "}\n"
   ""
   position {
-    x: -480.0
-    y: -270.0
-    z: 0.0
+    x: 0.0
+    y: 0.0
+    z: -0.1
   }
   rotation {
     x: 0.0

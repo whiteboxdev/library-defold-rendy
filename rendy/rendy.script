@@ -25,6 +25,15 @@
 -- GitHub: https://github.com/klaytonkowalski/library-defold-rendy
 
 --------------------------------------------------------------------------------
+-- Constants
+--------------------------------------------------------------------------------
+
+local message_acquire_input_focus = hash("acquire_input_focus")
+local message_release_input_focus = hash("release_input_focus")
+
+local diagonal_scaler = 1 / math.sqrt(2)
+
+--------------------------------------------------------------------------------
 -- Dependencies
 --------------------------------------------------------------------------------
 
@@ -34,102 +43,182 @@ local rendy = require "rendy.rendy"
 -- Properties
 --------------------------------------------------------------------------------
 
--- Active state.
 go.property("active", true)
-
--- Projection type.
 go.property("orthographic", true)
-
--- Resize mode.
 go.property("resize_mode_center", true)
 go.property("resize_mode_expand", false)
 go.property("resize_mode_stretch", false)
-
--- Render order relative to other cameras.
-go.property("order", 1)
-
--- Viewport in pixels.
+go.property("experimental_controls", false)
+go.property("experimental_speed", 100)
+go.property("render_order", 1)
 go.property("viewport_x", 0)
 go.property("viewport_y", 0)
 go.property("viewport_width", 960)
 go.property("viewport_height", 540)
-
--- Resolution in pixels.
 go.property("resolution_width", 960)
 go.property("resolution_height", 540)
-
--- Near and far planes of the frustum.
 go.property("z_min", -1)
 go.property("z_max", 1)
-
--- Zoom factor of an orthographic projection.
 go.property("zoom", 1)
-
--- Field of view of a perspective projection.
 go.property("field_of_view", 45)
+
+--------------------------------------------------------------------------------
+-- Local Functions
+--------------------------------------------------------------------------------
+
+-- Synchronizes the camera's data in the rendy.lua file with its corresponding game object's properties.
+-- This allows for property changes and animations using the `go.set()` and `go.animate()` functions.
+local function synchronize(self)
+	local camera_id = go.get_id()
+	if self.active ~= rendy.cameras[camera_id].active then
+		rendy.cameras[camera_id].active = self.active
+	end
+	if self.orthographic ~= rendy.cameras[camera_id].orthographic then
+		rendy.cameras[camera_id].orthographic = self.orthographic
+	end
+	if self.resize_mode_center ~= rendy.cameras[camera_id].resize_mode_center then
+		rendy.cameras[camera_id].resize_mode_center = self.resize_mode_center
+	end
+	if self.resize_mode_center ~= rendy.cameras[camera_id].resize_mode_center then
+		rendy.cameras[camera_id].resize_mode_expand = self.resize_mode_expand
+	end
+	if self.resize_mode_stretch ~= rendy.cameras[camera_id].resize_mode_stretch then
+		rendy.cameras[camera_id].resize_mode_stretch = self.resize_mode_stretch
+	end
+	if self.experimental_controls ~= rendy.cameras[camera_id].experimental_controls then
+		rendy.cameras[camera_id].experimental_controls = self.experimental_controls
+		msg.post(msg.url(), self.experimental_controls and message_acquire_input_focus or message_release_input_focus)
+	end
+	if self.experimental_speed ~= rendy.cameras[camera_id].experimental_speed then
+		rendy.cameras[camera_id].experimental_speed = self.experimental_speed
+	end
+	if self.render_order ~= rendy.cameras[camera_id].render_order then
+		rendy.cameras[camera_id].render_order = self.render_order
+	end
+	if self.viewport_x ~= rendy.cameras[camera_id].viewport_x then
+		rendy.cameras[camera_id].viewport_x = self.viewport_x
+	end
+	if self.viewport_y ~= rendy.cameras[camera_id].viewport_y then
+		rendy.cameras[camera_id].viewport_y = self.viewport_y
+	end
+	if self.viewport_width ~= rendy.cameras[camera_id].viewport_width then
+		rendy.cameras[camera_id].viewport_width = self.viewport_width
+	end
+	if self.viewport_height ~= rendy.cameras[camera_id].viewport_height then
+		rendy.cameras[camera_id].viewport_height = self.viewport_height
+	end
+	if self.resolution_width ~= rendy.cameras[camera_id].resolution_width then
+		rendy.cameras[camera_id].resolution_width = self.resolution_width
+	end
+	if self.resolution_height ~= rendy.cameras[camera_id].resolution_height then
+		rendy.cameras[camera_id].resolution_height = self.resolution_height
+	end
+	if self.z_min ~= rendy.cameras[camera_id].z_min then
+		rendy.cameras[camera_id].z_min = self.z_min
+	end
+	if self.z_max ~= rendy.cameras[camera_id].z_max then
+		rendy.cameras[camera_id].z_max = self.z_max
+	end
+	if self.zoom ~= rendy.cameras[camera_id].zoom then
+		rendy.cameras[camera_id].zoom = self.zoom
+	end
+	if self.field_of_view ~= rendy.cameras[camera_id].field_of_view then
+		rendy.cameras[camera_id].field_of_view = self.field_of_view
+	end
+end
+
+-- Updates orthographic camera controls.
+local function update_orthographic(self, dt)
+	if self.input.left + self.input.right ~= 0 or self.input.up + self.input.down ~= 0 then
+		local camera_id = go.get_id()
+		local position = go.get_position()
+		local speed = self.input.left + self.input.right ~= 0 and self.input.up + self.input.down ~= 0 and self.experimental_speed * diagonal_scaler or self.experimental_speed
+		local velocity = vmath.vector3((-self.input.left + self.input.right) * speed, (self.input.up - self.input.down) * speed, 0)
+		go.set_position(position + velocity * dt)
+	end
+end
+
+-- Updates perspective camera controls.
+local function update_perspective(self, dt)
+	if self.input.screen_dx ~= 0 or self.input.screen_dy ~= 0 then
+		local rotation = go.get_rotation()
+		rotation = rotation * vmath.quat_rotation_x(self.input.screen_dy * 0.002)
+		rotation = rotation * vmath.quat_rotation_y(-self.input.screen_dx * 0.002)
+		go.set_rotation(rotation)
+		self.input.screen_dx = 0
+		self.input.screen_dy = 0
+	end
+	if self.input.left + self.input.right ~= 0 or self.input.up + self.input.down ~= 0 then
+		local position = go.get_position()
+		local rotation = go.get_rotation()
+		local absolute_direction = vmath.vector3(-self.input.left + self.input.right, 0, -self.input.up + self.input.down)
+		local relative_direction = vmath.normalize(vmath.rotate(rotation, absolute_direction))
+		go.set_position(position + relative_direction * self.experimental_speed * dt)
+	end
+end
 
 --------------------------------------------------------------------------------
 -- Engine Functions
 --------------------------------------------------------------------------------
 
-function init()
+-- Creates the camera and initializes variables that are only relevant to the rendy.script file.
+function init(self)
 	rendy.create_camera(go.get_id())
+	self.input =
+	{
+		up = 0,
+		down = 0,
+		left = 0,
+		right = 0,
+		screen_dx = 0,
+		screen_dy = 0
+	}
 end
 
+-- Destroys the camera.
 function final()
 	rendy.destroy_camera(go.get_id())
 end
 
--- Synchronizes the camera's data in rendy.lua with its corresponding game object's properties.
--- This allows for property changes and animations using the `go.set()` and `go.animate()` functions.
-function update(self)
-	local id = go.get_id()
-	if self.active ~= rendy.cameras[id].active then
-		rendy.cameras[id].active = self.active
+-- Handles camera movement if experimental controls are enabled.
+-- This function works in coordination with `on_input()`.
+function update(self, dt)
+	synchronize(self)
+	if self.experimental_controls then
+		if self.orthographic then
+			update_orthographic(self, dt)
+		else
+			update_perspective(self, dt)
+		end
 	end
-	if self.orthographic ~= rendy.cameras[id].orthographic then
-		rendy.cameras[id].orthographic = self.orthographic
+end
+
+-- Handles camera movement if experimental controls are enabled.
+-- This function works in coordination with `update()`.
+function on_input(self, action_id, action)
+	if not action_id then
+		self.input.screen_dx = action.screen_dx
+		self.input.screen_dy = action.screen_dy
 	end
-	if self.resize_mode_center ~= rendy.cameras[id].resize_mode_center then
-		rendy.cameras[id].resize_mode_center = self.resize_mode_center
-	end
-	if self.resize_mode_center ~= rendy.cameras[id].resize_mode_center then
-		rendy.cameras[id].resize_mode_expand = self.resize_mode_expand
-	end
-	if self.resize_mode_stretch ~= rendy.cameras[id].resize_mode_stretch then
-		rendy.cameras[id].resize_mode_stretch = self.resize_mode_stretch
-	end
-	if self.order ~= rendy.cameras[id].order then
-		rendy.cameras[id].order = self.order
-	end
-	if self.viewport_x ~= rendy.cameras[id].viewport_x then
-		rendy.cameras[id].viewport_x = self.viewport_x
-	end
-	if self.viewport_y ~= rendy.cameras[id].viewport_y then
-		rendy.cameras[id].viewport_y = self.viewport_y
-	end
-	if self.viewport_width ~= rendy.cameras[id].viewport_width then
-		rendy.cameras[id].viewport_width = self.viewport_width
-	end
-	if self.viewport_height ~= rendy.cameras[id].viewport_height then
-		rendy.cameras[id].viewport_height = self.viewport_height
-	end
-	if self.resolution_width ~= rendy.cameras[id].resolution_width then
-		rendy.cameras[id].resolution_width = self.resolution_width
-	end
-	if self.resolution_height ~= rendy.cameras[id].resolution_height then
-		rendy.cameras[id].resolution_height = self.resolution_height
-	end
-	if self.z_min ~= rendy.cameras[id].z_min then
-		rendy.cameras[id].z_min = self.z_min
-	end
-	if self.z_max ~= rendy.cameras[id].z_max then
-		rendy.cameras[id].z_max = self.z_max
-	end
-	if self.zoom ~= rendy.cameras[id].zoom then
-		rendy.cameras[id].zoom = self.zoom
-	end
-	if self.field_of_view ~= rendy.cameras[id].field_of_view then
-		rendy.cameras[id].field_of_view = self.field_of_view
+	if action.pressed then
+		if action_id == hash("key_w") then
+			self.input.up = 1
+		elseif action_id == hash("key_a") then
+			self.input.left = 1
+		elseif action_id == hash("key_s") then
+			self.input.down = 1
+		elseif action_id == hash("key_d") then
+			self.input.right = 1
+		end
+	elseif action.released then
+		if action_id == hash("key_w") then
+			self.input.up = 0
+		elseif action_id == hash("key_a") then
+			self.input.left = 0
+		elseif action_id == hash("key_s") then
+			self.input.down = 0
+		elseif action_id == hash("key_d") then
+			self.input.right = 0
+		end
 	end
 end

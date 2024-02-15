@@ -5,7 +5,7 @@ instances {
   position {
     x: 0.0
     y: 0.0
-    z: 3.0
+    z: 5.0
   }
   rotation {
     x: 0.0
@@ -21,14 +21,14 @@ instances {
       type: PROPERTY_TYPE_BOOLEAN
     }
     properties {
-      id: "resize_mode_center"
-      value: "false"
+      id: "experimental_controls"
+      value: "true"
       type: PROPERTY_TYPE_BOOLEAN
     }
     properties {
-      id: "resize_mode_expand"
-      value: "true"
-      type: PROPERTY_TYPE_BOOLEAN
+      id: "experimental_speed"
+      value: "5.0"
+      type: PROPERTY_TYPE_NUMBER
     }
     properties {
       id: "z_min"
@@ -48,43 +48,6 @@ instances {
   }
 }
 scale_along_z: 0
-embedded_instances {
-  id: "main"
-  data: "components {\n"
-  "  id: \"script\"\n"
-  "  component: \"/examples/perspective/perspective.script\"\n"
-  "  position {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "  }\n"
-  "  rotation {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "    w: 1.0\n"
-  "  }\n"
-  "  property_decls {\n"
-  "  }\n"
-  "}\n"
-  ""
-  position {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
-  }
-  scale3 {
-    x: 1.0
-    y: 1.0
-    z: 1.0
-  }
-}
 embedded_instances {
   id: "logo"
   data: "embedded_components {\n"
@@ -135,10 +98,10 @@ embedded_instances {
   }
 }
 embedded_instances {
-  id: "gui"
+  id: "script"
   data: "components {\n"
-  "  id: \"gui\"\n"
-  "  component: \"/examples/perspective/perspective.gui\"\n"
+  "  id: \"script\"\n"
+  "  component: \"/examples/perspective/perspective.script\"\n"
   "  position {\n"
   "    x: 0.0\n"
   "    y: 0.0\n"
