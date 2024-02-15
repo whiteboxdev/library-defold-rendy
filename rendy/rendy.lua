@@ -34,6 +34,19 @@ local message_release_camera_focus = hash("release_camera_focus")
 local message_acquire_input_focus = hash("acquire_input_focus")
 local message_release_input_focus = hash("release_input_focus")
 
+local animated_properties =
+{
+	experimental_speed = true,
+	viewport_x = true,
+	viewport_y = true,
+	viewport_width = true,
+	viewport_height = true,
+	z_min = true,
+	z_max = true,
+	zoom = true,
+	field_of_view = true
+}
+
 --------------------------------------------------------------------------------
 -- Variables
 --------------------------------------------------------------------------------
@@ -83,6 +96,7 @@ function rendy.create_camera(camera_id)
 	local script_url = msg.url(nil, camera_id, "script")
 	rendy.cameras[camera_id] =
 	{
+		-- Variables that are not meant to be accessed or modified by the user.
 		camera_id = camera_id,
 		camera_url = msg.url(nil, camera_id, "camera"),
 		script_url = msg.url(nil, camera_id, "script"),
@@ -95,12 +109,17 @@ function rendy.create_camera(camera_id)
 		frustum = vmath.matrix4(),
 		shake_timer = nil,
 		shake_position = nil,
+		animating = {},
+		-- Variables that are configured by the user.
+		-- Readable by calling `rendy.get()` or `go.get()`.
+		-- Writable by calling `rendy.set()` or `rendy.animate()`, but not `go.set()` or `go.animate()`.
 		active = go.get(script_url, "active"),
 		orthographic = go.get(script_url, "orthographic"),
 		resize_mode_center = go.get(script_url, "resize_mode_center"),
 		resize_mode_expand = go.get(script_url, "resize_mode_expand"),
 		resize_mode_stretch = go.get(script_url, "resize_mode_stretch"),
 		experimental_controls = go.get(script_url, "experimental_controls"),
+		experimental_speed = go.get(script_url, "experimental_speed"),
 		render_order = go.get(script_url, "render_order"),
 		viewport_x = go.get(script_url, "viewport_x"),
 		viewport_y = go.get(script_url, "viewport_y"),
@@ -129,108 +148,45 @@ function rendy.destroy_camera(camera_id)
 	rendy.cameras[camera_id] = nil
 end
 
--- Sets a camera's active state.
--- If a camera is inactive, then its configuration remains in memory, but it is not drawn by the render script.
-function rendy.set_active(camera_id, flag)
-	go.set(rendy.cameras[camera_id].script_url, "active", flag)
-	rendy.cameras[camera_id].active = flag
+function rendy.set(camera_id, property, value)
+	if rendy.cameras[camera_id][property] == nil then
+		print("Defold Rendy: rendy.set() -> Unknown property: " .. property)
+		return
+	end
+	if property == "resize_mode_center" or property == "resize_mode_expand" or property == "resize_mode_stretch" then
+		rendy.cameras[camera_id].resize_mode_center = false
+		rendy.cameras[camera_id].resize_mode_expand = false
+		rendy.cameras[camera_id].resize_mode_stretch = false
+	end
+	if property == "experimental_controls" then
+		msg.post(rendy.cameras[camera_id].script_url, value and message_acquire_input_focus or message_release_input_focus)
+	end
+	rendy.cameras[camera_id][property] = value
 end
 
--- Sets a camera's projection transform to orthographic or perspective.
-function rendy.set_orthographic(camera_id, flag)
-	go.set(rendy.cameras[camera_id].script_url, "orthographic", flag)
-	rendy.cameras[camera_id].orthographic = flag
+function rendy.animate(camera_id, property, playback, to, easing, duration, delay, complete_function)
+	if not animated_properties[property] then
+		print("Defold Rendy: rendy.animate() -> Property cannot be animated: " .. property)
+		return
+	end
+	go.set(rendy.cameras[camera_id].script_url, property, rendy.cameras[camera_id][property])
+	local callback = function()
+		if complete_function then
+			complete_function()
+		end
+		rendy.cameras[camera_id].animating[property] = nil
+	end
+	go.animate(rendy.cameras[camera_id].script_url, property, playback, to, easing, duration, delay, callback)
+	rendy.cameras[camera_id].animating[property] = true
 end
 
--- Sets a camera's resize mode to center.
-function rendy.set_resize_mode_center(camera_id)
-	go.set(rendy.cameras[camera_id].script_url, "resize_mode_center", true)
-	go.set(rendy.cameras[camera_id].script_url, "resize_mode_expand", false)
-	go.set(rendy.cameras[camera_id].script_url, "resize_mode_stretch", false)
-	rendy.cameras[camera_id].resize_mode_center = true
-	rendy.cameras[camera_id].resize_mode_expand = false
-	rendy.cameras[camera_id].resize_mode_stretch = false
+function rendy.cancel_animations(camera_id, property)
+	go.cancel_animations(rendy.cameras[camera_id].script_url, property)
+	rendy.cameras[camera_id].animating[property] = nil
 end
 
--- Sets a camera's resize mode to expand.
-function rendy.set_resize_mode_expand(camera_id)
-	go.set(rendy.cameras[camera_id].script_url, "resize_mode_center", false)
-	go.set(rendy.cameras[camera_id].script_url, "resize_mode_expand", true)
-	go.set(rendy.cameras[camera_id].script_url, "resize_mode_stretch", false)
-	rendy.cameras[camera_id].resize_mode_center = false
-	rendy.cameras[camera_id].resize_mode_expand = true
-	rendy.cameras[camera_id].resize_mode_stretch = false
-end
-
--- Sets a camera's resize mode to stretch.
-function rendy.set_resize_mode_stretch(camera_id)
-	go.set(rendy.cameras[camera_id].script_url, "resize_mode_center", false)
-	go.set(rendy.cameras[camera_id].script_url, "resize_mode_expand", false)
-	go.set(rendy.cameras[camera_id].script_url, "resize_mode_stretch", true)
-	rendy.cameras[camera_id].resize_mode_center = false
-	rendy.cameras[camera_id].resize_mode_expand = false
-	rendy.cameras[camera_id].resize_mode_stretch = true
-end
-
--- Sets a camera's experimental controls state.
-function rendy.set_experimental_controls(camera_id, flag)
-	go.set(rendy.cameras[camera_id].script_url, "experimental_controls", flag)
-	rendy.cameras[camera_id].experimental_controls = flag
-	msg.post(script_url, flag and message_acquire_input_focus or message_release_input_focus)
-end
-
--- Sets a camera's experimental speed.
-function rendy.set_experimental_speed(camera_id, speed)
-	go.set(rendy.cameras[camera_id].script_url, "experimental_speed", speed)
-	rendy.cameras[camera_id].experimental_speed = speed
-end
-
--- Sets a camera's render order.
-function rendy.set_render_order(camera_id, render_order)
-	go.set(rendy.cameras[camera_id].script_url, "render_order", render_order)
-	rendy.cameras[camera_id].render_order = render_order
-end
-
--- Sets a camera's viewport.
-function rendy.set_viewport(camera_id, x, y, width, height)
-	go.set(rendy.cameras[camera_id].script_url, "viewport_x", x)
-	go.set(rendy.cameras[camera_id].script_url, "viewport_y", y)
-	go.set(rendy.cameras[camera_id].script_url, "viewport_width", width)
-	go.set(rendy.cameras[camera_id].script_url, "viewport_height", height)
-	rendy.cameras[camera_id].viewport_x = viewport_x
-	rendy.cameras[camera_id].viewport_y = viewport_y
-	rendy.cameras[camera_id].viewport_width = viewport_width
-	rendy.cameras[camera_id].viewport_height = viewport_height
-end
-
--- Sets a camera's resolution.
-function rendy.set_resolution(camera_id, width, height)
-	go.set(rendy.cameras[camera_id].script_url, "resolution_width", width)
-	go.set(rendy.cameras[camera_id].script_url, "resolution_height", height)
-	rendy.cameras[camera_id].resolution_width = width
-	rendy.cameras[camera_id].resolution_height = height
-end
-
--- Sets a camera's near and far clipping planes.
-function rendy.set_range(camera_id, z_min, z_max)
-	go.set(rendy.cameras[camera_id].script_url, "z_min", z_min)
-	go.set(rendy.cameras[camera_id].script_url, "z_max", z_max)
-	rendy.cameras[camera_id].z_min = z_min
-	rendy.cameras[camera_id].z_max = z_max
-end
-
--- Sets an orthographic camera's zoom factor.
--- If the zoom factor is < 1, then the camera will zoom in.
--- If the zoom factor is > 1, then the camera will zoom out.
-function rendy.set_zoom(camera_id, zoom)
-	go.set(rendy.cameras[camera_id].script_url, "zoom", zoom)
-	rendy.cameras[camera_id].zoom = zoom
-end
-
--- Sets a perspective camera's field of view.
-function rendy.set_field_of_view(camera_id, field_of_view)
-	go.set(rendy.cameras[camera_id].script_url, "field_of_view", field_of_view)
-	rendy.cameras[camera_id].field_of_view = field_of_view
+function rendy.get(camera_id, property)
+	return rendy.cameras[camera_id][property]
 end
 
 -- Gets the initial window size specified in the game.project file.

@@ -60,11 +60,11 @@ local action_screen_y = nil
 local function update_label()
 	local text = ""
 	-- Stringify the camera's resize mode.
-	if rendy.cameras[id_rendy].resize_mode_center then
+	if rendy.get(id_rendy, "resize_mode_center") then
 		text = text .. "Resize Mode: Center"
-	elseif rendy.cameras[id_rendy].resize_mode_expand then
+	elseif rendy.get(id_rendy, "resize_mode_expand") then
 		text = text .. "Resize Mode: Expand"
-	elseif rendy.cameras[id_rendy].resize_mode_stretch then
+	elseif rendy.get(id_rendy, "resize_mode_stretch") then
 		text = text .. "Resize Mode: Stretch"
 	end
 	-- Stringify the logo's screen position.
@@ -107,11 +107,11 @@ function on_input(_, action_id, action)
 	-- Update the camera's resize mode.
 	if action.pressed then
 		if action_id == key_1 then
-			rendy.set_resize_mode_center(id_rendy)
+			rendy.set(id_rendy, "resize_mode_center", true)
 		elseif action_id == key_2 then
-			rendy.set_resize_mode_expand(id_rendy)
+			rendy.set(id_rendy, "resize_mode_expand", true)
 		elseif action_id == key_3 then
-			rendy.set_resize_mode_stretch(id_rendy)
+			rendy.set(id_rendy, "resize_mode_stretch", true)
 		elseif action_id == key_4 then
 			rendy.shake(id_rendy, 150, 10, 0.5, 0.75)
 		elseif action_id == key_esc then

@@ -50,7 +50,7 @@ local id_rendy = hash("/rendy")
 -- Engine Functions
 --------------------------------------------------------------------------------
 
-function init(self)
+function init()
 	window.set_mouse_lock(true)
 	go.animate(id_logo, "euler.x", go.PLAYBACK_LOOP_FORWARD, 360, go.EASING_LINEAR, 10)
 	go.animate(id_logo, "euler.y", go.PLAYBACK_LOOP_FORWARD, 360, go.EASING_LINEAR, 10)
@@ -66,11 +66,11 @@ end
 function on_input(_, action_id, action)
 	if action.pressed then
 		if action_id == key_1 then
-			rendy.set_resize_mode_center(id_rendy)
+			rendy.set(id_rendy, "resize_mode_center", true)
 		elseif action_id == key_2 then
-			rendy.set_resize_mode_expand(id_rendy)
+			rendy.set(id_rendy, "resize_mode_expand", true)
 		elseif action_id == key_3 then
-			rendy.set_resize_mode_stretch(id_rendy)
+			rendy.set(id_rendy, "resize_mode_stretch", true)
 		elseif action_id == key_4 then
 			rendy.shake(id_rendy, 0.5, 5, 0.5, 0.75)
 		elseif action_id == key_backspace then

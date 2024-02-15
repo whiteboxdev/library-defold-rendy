@@ -33,6 +33,19 @@ local message_release_input_focus = hash("release_input_focus")
 
 local diagonal_scaler = 1 / math.sqrt(2)
 
+local animated_properties =
+{
+	experimental_speed = true,
+	viewport_x = true,
+	viewport_y = true,
+	viewport_width = true,
+	viewport_height = true,
+	z_min = true,
+	z_max = true,
+	zoom = true,
+	field_of_view = true
+}
+
 --------------------------------------------------------------------------------
 -- Dependencies
 --------------------------------------------------------------------------------
@@ -42,6 +55,11 @@ local rendy = require "rendy.rendy"
 --------------------------------------------------------------------------------
 -- Properties
 --------------------------------------------------------------------------------
+
+-- The following properties are for configuration purposes only.
+-- Upon calling `rendy.create_camera()`, they will be extracted from this script.
+-- Calling `go.set()` and `go.animate()` will result in undefined behavior.
+-- Instead, call the analogous `rendy.set_property()` and `rendy.animate_property()`.
 
 go.property("active", true)
 go.property("orthographic", true)
@@ -66,64 +84,12 @@ go.property("field_of_view", 45)
 -- Local Functions
 --------------------------------------------------------------------------------
 
--- Synchronizes the camera's data in the rendy.lua file with its corresponding game object's properties.
--- This allows for property changes and animations using the `go.set()` and `go.animate()` functions.
+-- Synchronizes script properties with module variables.
+-- This allows animated properties to sync with their stored values in the rendy.lua file.
 local function synchronize(self)
-	local camera_id = go.get_id()
-	if self.active ~= rendy.cameras[camera_id].active then
-		rendy.cameras[camera_id].active = self.active
-	end
-	if self.orthographic ~= rendy.cameras[camera_id].orthographic then
-		rendy.cameras[camera_id].orthographic = self.orthographic
-	end
-	if self.resize_mode_center ~= rendy.cameras[camera_id].resize_mode_center then
-		rendy.cameras[camera_id].resize_mode_center = self.resize_mode_center
-	end
-	if self.resize_mode_center ~= rendy.cameras[camera_id].resize_mode_center then
-		rendy.cameras[camera_id].resize_mode_expand = self.resize_mode_expand
-	end
-	if self.resize_mode_stretch ~= rendy.cameras[camera_id].resize_mode_stretch then
-		rendy.cameras[camera_id].resize_mode_stretch = self.resize_mode_stretch
-	end
-	if self.experimental_controls ~= rendy.cameras[camera_id].experimental_controls then
-		rendy.cameras[camera_id].experimental_controls = self.experimental_controls
-		msg.post(msg.url(), self.experimental_controls and message_acquire_input_focus or message_release_input_focus)
-	end
-	if self.experimental_speed ~= rendy.cameras[camera_id].experimental_speed then
-		rendy.cameras[camera_id].experimental_speed = self.experimental_speed
-	end
-	if self.render_order ~= rendy.cameras[camera_id].render_order then
-		rendy.cameras[camera_id].render_order = self.render_order
-	end
-	if self.viewport_x ~= rendy.cameras[camera_id].viewport_x then
-		rendy.cameras[camera_id].viewport_x = self.viewport_x
-	end
-	if self.viewport_y ~= rendy.cameras[camera_id].viewport_y then
-		rendy.cameras[camera_id].viewport_y = self.viewport_y
-	end
-	if self.viewport_width ~= rendy.cameras[camera_id].viewport_width then
-		rendy.cameras[camera_id].viewport_width = self.viewport_width
-	end
-	if self.viewport_height ~= rendy.cameras[camera_id].viewport_height then
-		rendy.cameras[camera_id].viewport_height = self.viewport_height
-	end
-	if self.resolution_width ~= rendy.cameras[camera_id].resolution_width then
-		rendy.cameras[camera_id].resolution_width = self.resolution_width
-	end
-	if self.resolution_height ~= rendy.cameras[camera_id].resolution_height then
-		rendy.cameras[camera_id].resolution_height = self.resolution_height
-	end
-	if self.z_min ~= rendy.cameras[camera_id].z_min then
-		rendy.cameras[camera_id].z_min = self.z_min
-	end
-	if self.z_max ~= rendy.cameras[camera_id].z_max then
-		rendy.cameras[camera_id].z_max = self.z_max
-	end
-	if self.zoom ~= rendy.cameras[camera_id].zoom then
-		rendy.cameras[camera_id].zoom = self.zoom
-	end
-	if self.field_of_view ~= rendy.cameras[camera_id].field_of_view then
-		rendy.cameras[camera_id].field_of_view = self.field_of_view
+	local script_url = msg.url()
+	for property, _ in pairs(animated_properties) do
+		self.camera[property] = go.get(script_url, property)
 	end
 end
 
@@ -132,7 +98,7 @@ local function update_orthographic(self, dt)
 	if self.input.left + self.input.right ~= 0 or self.input.up + self.input.down ~= 0 then
 		local camera_id = go.get_id()
 		local position = go.get_position()
-		local speed = self.input.left + self.input.right ~= 0 and self.input.up + self.input.down ~= 0 and self.experimental_speed * diagonal_scaler or self.experimental_speed
+		local speed = self.input.left + self.input.right ~= 0 and self.camera.experimental_speed * diagonal_scaler or self.camera.experimental_speed
 		local velocity = vmath.vector3((-self.input.left + self.input.right) * speed, (self.input.up - self.input.down) * speed, 0)
 		go.set_position(position + velocity * dt)
 	end
@@ -145,6 +111,12 @@ local function update_perspective(self, dt)
 		rotation = rotation * vmath.quat_rotation_x(self.input.screen_dy * 0.002)
 		rotation = rotation * vmath.quat_rotation_y(-self.input.screen_dx * 0.002)
 		go.set_rotation(rotation)
+		local euler_x = go.get(go.get_id(), "euler.x")
+		if euler_x < -89 then
+			go.set(go.get_id(), "euler.x", -89)
+		elseif euler_x > 89 then
+			go.set(go.get_id(), "euler.x", 89)
+		end
 		self.input.screen_dx = 0
 		self.input.screen_dy = 0
 	end
@@ -153,7 +125,7 @@ local function update_perspective(self, dt)
 		local rotation = go.get_rotation()
 		local absolute_direction = vmath.vector3(-self.input.left + self.input.right, 0, -self.input.up + self.input.down)
 		local relative_direction = vmath.normalize(vmath.rotate(rotation, absolute_direction))
-		go.set_position(position + relative_direction * self.experimental_speed * dt)
+		go.set_position(position + relative_direction * self.camera.experimental_speed * dt)
 	end
 end
 
@@ -164,6 +136,7 @@ end
 -- Creates the camera and initializes variables that are only relevant to the rendy.script file.
 function init(self)
 	rendy.create_camera(go.get_id())
+	self.camera = rendy.cameras[go.get_id()]
 	self.input =
 	{
 		up = 0,
@@ -176,16 +149,18 @@ function init(self)
 end
 
 -- Destroys the camera.
-function final()
+function final(self)
 	rendy.destroy_camera(go.get_id())
 end
 
 -- Handles camera movement if experimental controls are enabled.
 -- This function works in coordination with `on_input()`.
 function update(self, dt)
-	synchronize(self)
-	if self.experimental_controls then
-		if self.orthographic then
+	if next(self.camera.animating) then
+		synchronize(self)
+	end
+	if self.camera.experimental_controls then
+		if self.camera.orthographic then
 			update_orthographic(self, dt)
 		else
 			update_perspective(self, dt)
