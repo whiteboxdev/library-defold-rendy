@@ -11,13 +11,19 @@ Please click the ☆ button on GitHub if this repository is useful or interestin
 Add the latest version to your project's dependencies:  
 https://github.com/klaytonkowalski/library-defold-rendy/archive/main.zip
 
-## Usage
+## Tutorial
+
+### Initialization (1 of 7)
 
 In the *game.project* file's Bootstrap section, set the active Render component to *rendy.render* file:
 
 ![example_bootstrap](https://github.com/klaytonkowalski/library-defold-rendy/assets/70988652/9f6fea97-de67-4938-8730-5ce204f3b526)
 
 Rendy provides a pre-packaged *rendy.go* game object that contains a camera component and a script component, which communicate with the *rendy.lua* file and the *rendy.render_script* file. Multiple cameras may be active simultaneously, all with their own projection, viewports, and other properties.
+
+---
+
+### Configuration (2 of 7)
 
 Let's take a look at the camera's default configuration:
 
@@ -39,6 +45,8 @@ Let's take a look at the camera's default configuration:
 
 ---
 
+### Resize Modes (3 of 7)
+
 One of the most common problems every game developer must confront is what to do when the user resizes the window. Developing for just one specific screen size is highly unlikely in today's world of running the same software on multiple different devices, resolutions, screen orientations, etc. Rendy offers three *resize modes* to solve this problem.
 
 The following images show a window whose width has increased by a couple hundred pixels. Its original size was 960 x 540. The camera's viewport size is 100% of the window size, or 960 x 540. The camera's position is defined by the centerpoint of its viewport, which is (480, 270) + an offset of (0, 27) = a final position of (480, 297). The bottom-left of the viewport has a screen position of (0, 0). The Cursor World Position label is not relevant to these examples.
@@ -56,6 +64,8 @@ The following images show a window whose width has increased by a couple hundred
 ![example_stretch](https://github.com/klaytonkowalski/library-defold-rendy/assets/70988652/fa4bbabd-37e3-44c3-b497-adb2cc813aad)
 
 ---
+
+### Setting and Animating Properties (4 of 7)
 
 Import Rendy into script files that need to interact with a camera:
 
@@ -83,6 +93,8 @@ The standard `go.get()` function can be safely used to retrieve property values,
 
 ---
 
+### Shake Effect (5 of 7)
+
 Shaking the camera is a widely loved feature by developers and players alike. It's just so fun! The camera's x and y positions are always animated, however its z position is only animated if using a perspective projection. Here is a rather slow and exaggerated example of an orthographic camera shake:
 
 ```
@@ -95,6 +107,8 @@ The camera moves `radius` units in random directions, ping-pongs between its ori
 
 ---
 
+### Coordinate Conversions (6 of 7)
+
 (This section needs more documentation effort.)
 
 It is often useful to convert between screen coordinates and world coordinates. One practical use-case is clicking on the screen, casting a ray into the game world, then retrieving all of the game object ids which intersect that ray. To accomplish tasks like this one, Rendy provides `screen_to_world()` and `world_to_screen()` functions.
@@ -103,7 +117,54 @@ Defold passes an `action` table to its `on_input()` functions. The `action.x` va
 
 ---
 
+### Render Script (7 of 7)
+
 If your project requires you to modify the pre-packaged *rendy.render_script* file, then remember to change the Render component in the *game.project* file's Bootstrap section. Rendy's render script is thoroughly commented, which will hopefully assist you in adding your own render predicates, swapping OpenGL states, and implementing more advanced graphics features.
+
+The most likely use-case is adding a custom render predicate. The following table is located near the top of the render script:
+
+```
+-- Contains all render predicates.
+-- Each predicate consists of a table formatted like so:
+-- <predicate_name> = { tags = { hash("<predicate_name>"), ... }, object = nil }
+-- The `object` entry will store the actual predicate, which is created by calling `render.predicate()`.
+local predicates =
+{
+	-- Declare predicates that come shipped with default Defold components.
+	model =
+	{
+		tags = { hash("model") },
+		object = nil
+	},
+	tile =
+	{
+		tags = { hash("tile") },
+		object = nil
+	},
+	particle =
+	{
+		tags = { hash("particle") },
+		object = nil
+	},
+	gui =
+	{
+		tags = { hash("gui") },
+		object = nil
+	},
+	text =
+	{
+		tags = { hash("text") },
+		object = nil
+	},
+	-- Declare custom predicates.
+}
+```
+
+Each predicate in this table is created in the `init()` function. The ordering of each predicate does not matter, however to maintain readability, custom predicates should be added to the bottom of the table. As mentioned by the comments, the `object` entry of each predicate table will reference the actual predicate, which can be drawn in the `update()` function:
+
+```
+render.draw(predicates.tile.object, { frustum = camera.frustum })
+```
 
 ## API
 
