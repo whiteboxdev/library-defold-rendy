@@ -44,7 +44,7 @@ local message_window_resized = hash("window_resized")
 -- Contains all render predicates.
 -- Each predicate consists of a table formatted like so:
 -- <predicate_name> = { tags = { hash("<predicate_name>"), ... }, object = nil }
--- The object entry will store the actual predicate, which is created by calling `render.predicate()`.
+-- The `object` entry will reference the actual predicate, which is created by calling `render.predicate()`.
 local predicates =
 {
 	-- Declare predicates that come shipped with default Defold components.
