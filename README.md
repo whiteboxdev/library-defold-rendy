@@ -130,33 +130,33 @@ The most likely use-case is adding a custom render predicate. The following tabl
 -- The `object` entry will store the actual predicate, which is created by calling `render.predicate()`.
 local predicates =
 {
-	-- Declare predicates that come shipped with default Defold components.
-	model =
-	{
-		tags = { hash("model") },
-		object = nil
-	},
-	tile =
-	{
-		tags = { hash("tile") },
-		object = nil
-	},
-	particle =
-	{
-		tags = { hash("particle") },
-		object = nil
-	},
-	gui =
-	{
-		tags = { hash("gui") },
-		object = nil
-	},
-	text =
-	{
-		tags = { hash("text") },
-		object = nil
-	},
-	-- Declare custom predicates.
+    -- Declare predicates that come shipped with default Defold components.
+    model =
+    {
+        tags = { hash("model") },
+        object = nil
+    },
+    tile =
+    {
+        tags = { hash("tile") },
+        object = nil
+    },
+    particle =
+    {
+        tags = { hash("particle") },
+        object = nil
+    },
+    gui =
+    {
+        tags = { hash("gui") },
+        object = nil
+    },
+    text =
+    {
+        tags = { hash("text") },
+        object = nil
+    },
+    -- Declare custom predicates.
 }
 ```
 
