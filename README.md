@@ -151,9 +151,9 @@ local predicates =
         tags = { hash("gui") },
         object = nil
     },
-    text =
+    debug_text =
     {
-        tags = { hash("text") },
+        tags = { hash("debug_text") },
         object = nil
     },
     -- Declare custom predicates.

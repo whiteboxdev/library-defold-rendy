@@ -68,9 +68,9 @@ local predicates =
 		tags = { hash("gui") },
 		object = nil
 	},
-	text =
+	debug_text =
 	{
-		tags = { hash("text") },
+		tags = { hash("debug_text") },
 		object = nil
 	},
 	-- Declare custom predicates.
@@ -306,7 +306,7 @@ function update(self, dt)
 	render.enable_state(render.STATE_BLEND)
 	render.enable_state(render.STATE_STENCIL_TEST)
 	render.draw(predicates.gui.object)
-	render.draw(predicates.text.object)
+	render.draw(predicates.debug_text.object)
 	render.disable_state(render.STATE_STENCIL_TEST)
 	render.disable_state(render.STATE_BLEND)
 end
