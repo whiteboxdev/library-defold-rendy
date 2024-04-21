@@ -43,6 +43,12 @@ Let's take a look at the camera's default configuration:
 * **Zoom** sets the zoom factor for an orthographic projection. For example, if the `zoom = 0.5`, then the camera will zoom in and game objects will appear 2x as large. If `zoom = 2`, then the camera will zoom out and game objects will appear 0.5x as large. (This may seem counterintuitive, however it saves us from coding an extra division operation and I truthfully cannot think of a better term for "opposite of zoom". Please submit a pull request if you come up with something!)
 * **Field Of View** effectively sets the zoom factor for a perspective projection, but more precisely, it sets the degrees in width that the camera can see of the game world. For example, if `field_of_view = 45`, then then camera can see a 45-degree window of game objects. A human's field of view is roughly 135 degrees, however we tend to use lower values in video games.
 
+Import Rendy into script files that need to call camera utility functions:
+
+```
+local rendy = require "rendy.rendy"
+```
+
 ---
 
 ### Resize Modes (3 of 7)
@@ -65,31 +71,15 @@ The following images show a window whose width has increased by a couple hundred
 
 ---
 
-### Setting and Animating Properties (4 of 7)
+### Setting and Getting Properties (4 of 7)
 
-Import Rendy into script files that need to interact with a camera:
-
-```
-local rendy = require "rendy.rendy"
-```
-
-Do not modify *rendy.script* properties using the standard game object API. Instead, Rendy provides the following analogous functions that maintain synchronization between the *rendy.script* and *rendy.lua* files:
-
-| Standard API | Rendy API |
-| ---------- | --------- |
-| go.set()   | rendy.set() |
-| go.animate() | rendy.animate() |
-| go.cancel_animations() | rendy.cancel_animations() |
-| go.get() | rendy.get() |
-
-Here is an example of setting and animating two different properties:
+Use `rendy.set()` instead of `go.set()` to modify camera properties. This function includes a few checks and enhancements that avoid state issues.
 
 ```
 rendy.set(hash("/my_rendy_object"), "viewport_width", 480)
-rendy.animate(hash("/my_rendy_object"), "zoom", go.PLAYBACK_LOOP_PINGPONG, 2, go.EASING_INOUTQUAD, 3, 0, function() print("Ping Pong!") end)
 ```
 
-The standard `go.get()` function can be safely used to retrieve property values, however the analogous `rendy.get()` function is provided for consistency.
+The standard `go.get()` function can be safely used to retrieve property values. The analogous `rendy.get()` function is provided for consistency.
 
 ---
 
@@ -109,11 +99,11 @@ The camera moves `radius` units in random directions, ping-pongs between its ori
 
 ### Coordinate Conversions (6 of 7)
 
-(This section needs more documentation effort.)
-
 It is often useful to convert between screen coordinates and world coordinates. One practical use-case is clicking on the screen, casting a ray into the game world, then retrieving all of the game object ids which intersect that ray. To accomplish tasks like this one, Rendy provides `screen_to_world()` and `world_to_screen()` functions.
 
-Defold passes an `action` table to its `on_input()` functions. The `action.x` variable does not reflect changes to the window's size relative to its initial size specified in the game.project file. The `action.screen_x` *does* reflect changes to the window's size. For example, if a 960 x 540 window is resized to 1920 x 1080, then moving the cursor to the middle of the screen will show `action.xy = (480, 270)` and `action.screen_xy = (960, 540)`. Rendy expects these reflective screen variables when passing screen positions.
+Defold passes an `action` table to its `on_input()` functions. The `action.x` variable does not reflect changes to the window's size relative to its initial size specified in the game.project file. The `action.screen_x` *does* reflect size changes. For example, if a 960 x 540 window is resized to 1920 x 1080, then moving the cursor to the middle of the screen will show `action.xy = (480, 270)` and `action.screen_xy = (960, 540)`. Rendy expects `action.screen_xy` when passing screen positions to any of its utility functions.
+
+(Todo: Examples of coordinate-conversion functions.)
 
 ---
 
@@ -121,7 +111,7 @@ Defold passes an `action` table to its `on_input()` functions. The `action.x` va
 
 If your project requires you to modify the pre-packaged *rendy.render_script* file, then remember to change the Render component in the *game.project* file's Bootstrap section. Rendy's render script is thoroughly commented, which will hopefully assist you in adding your own render predicates, swapping OpenGL states, and implementing more advanced graphics features.
 
-The most likely use-case is adding a custom render predicate. The following table is located near the top of the render script:
+The most likely use-case is adding custom render predicates. The following table is located near the top of the render script:
 
 ```
 -- Contains all render predicates.
@@ -182,14 +172,6 @@ Destroys a camera. This function is called automatically by the *rendy.go* game 
 
 Sets a camera property. This function replaces the standard `go.set()`.
 
-### function rendy.animate(camera_id, property, playback, to, easing, duration \[, delay] \[, complete_function])
-
-Animates a camera property. This function replaces the standard `go.animate()`.
-
-### function rendy.cancel_animations(camera_id, property)
-
-Cancels a camera property animation. This function replaces the standard `go.cancel_animations()`.
-
 ### function rendy.get(camera_id, property)
 
 Gets a camera property. This function is equivalent to the standard `go.get()`.
@@ -218,7 +200,7 @@ Cancels an ongoing camera shake animation.
 
 ### function rendy.screen_to_world(camera_id, screen_position)
 
-Converts a screen position to a world position. The screen position's z component maps to the camera frustum's z component.
+Converts a screen position to a world position.
 
 ### function rendy.world_to_screen(camera_id, world_position)
 

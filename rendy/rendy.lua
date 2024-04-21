@@ -34,19 +34,6 @@ local message_release_camera_focus = hash("release_camera_focus")
 local message_acquire_input_focus = hash("acquire_input_focus")
 local message_release_input_focus = hash("release_input_focus")
 
-local animated_properties =
-{
-	experimental_speed = true,
-	viewport_x = true,
-	viewport_y = true,
-	viewport_width = true,
-	viewport_height = true,
-	z_min = true,
-	z_max = true,
-	zoom = true,
-	field_of_view = true
-}
-
 --------------------------------------------------------------------------------
 -- Variables
 --------------------------------------------------------------------------------
@@ -77,7 +64,7 @@ local function is_within_viewport(camera, screen_x, screen_y)
 		screen_y <= camera.viewport_pixel_y + camera.viewport_pixel_height
 end
 
--- Checks if an NDC position is within the OpenGL NDC cube.
+-- Checks if an NDC position is within the NDC cube.
 local function is_within_ndc_cube(ndc_position)
 	return
 		-1 <= ndc_position.x and ndc_position.x <= 1 and
@@ -96,7 +83,7 @@ function rendy.create_camera(camera_id)
 	local script_url = msg.url(nil, camera_id, "script")
 	rendy.cameras[camera_id] =
 	{
-		-- Variables that are not meant to be accessed or modified by the user.
+		-- Variables that are not configured by the developer.
 		camera_id = camera_id,
 		camera_url = msg.url(nil, camera_id, "camera"),
 		script_url = msg.url(nil, camera_id, "script"),
@@ -109,10 +96,7 @@ function rendy.create_camera(camera_id)
 		frustum = vmath.matrix4(),
 		shake_timer = nil,
 		shake_position = nil,
-		animating = {},
-		-- Variables that are configured by the user.
-		-- Readable by calling `rendy.get()` or `go.get()`.
-		-- Writable by calling `rendy.set()` or `rendy.animate()`, but not `go.set()` or `go.animate()`.
+		-- Variables that are configured by the developer in the editor.
 		active = go.get(script_url, "active"),
 		orthographic = go.get(script_url, "orthographic"),
 		resize_mode_center = go.get(script_url, "resize_mode_center"),
@@ -148,6 +132,8 @@ function rendy.destroy_camera(camera_id)
 	rendy.cameras[camera_id] = nil
 end
 
+-- Sets a camera property.
+-- This function replaces the standard `go.set()`.
 function rendy.set(camera_id, property, value)
 	if rendy.cameras[camera_id][property] == nil then
 		print("Defold Rendy: rendy.set() -> Unknown property: " .. property)
@@ -164,27 +150,8 @@ function rendy.set(camera_id, property, value)
 	rendy.cameras[camera_id][property] = value
 end
 
-function rendy.animate(camera_id, property, playback, to, easing, duration, delay, complete_function)
-	if not animated_properties[property] then
-		print("Defold Rendy: rendy.animate() -> Property cannot be animated: " .. property)
-		return
-	end
-	go.set(rendy.cameras[camera_id].script_url, property, rendy.cameras[camera_id][property])
-	local callback = function()
-		if complete_function then
-			complete_function()
-		end
-		rendy.cameras[camera_id].animating[property] = nil
-	end
-	go.animate(rendy.cameras[camera_id].script_url, property, playback, to, easing, duration, delay, callback)
-	rendy.cameras[camera_id].animating[property] = true
-end
-
-function rendy.cancel_animations(camera_id, property)
-	go.cancel_animations(rendy.cameras[camera_id].script_url, property)
-	rendy.cameras[camera_id].animating[property] = nil
-end
-
+-- Gets a camera property.
+-- This function is equivalent to the standard `go.get()`.
 function rendy.get(camera_id, property)
 	return rendy.cameras[camera_id][property]
 end
@@ -210,7 +177,7 @@ function rendy.get_stack(screen_x, screen_y)
 	return camera_ids
 end
 
--- Starts a camera shake animation.
+-- Starts a shake animation.
 -- If the camera is already shaking, then the animation is cancelled and restarted.
 -- The radius is increased or decreased over time if the scaler argument is ~= 1.
 function rendy.shake(camera_id, radius, intensity, duration, scaler)
@@ -241,7 +208,7 @@ function rendy.shake(camera_id, radius, intensity, duration, scaler)
 	rendy.cameras[camera_id].shake_timer = timer.delay(shake_duration, true, animation_loop)
 end
 
--- Cancels an ongoing camera shake animation.
+-- Cancels an ongoing shake animation.
 function rendy.cancel_shake(camera_id)
 	if not rendy.cameras[camera_id].shake_timer then
 		return
@@ -259,13 +226,19 @@ function rendy.screen_to_world(camera_id, screen_position)
 	if not is_within_viewport(rendy.cameras[camera_id], screen_position.x, screen_position.y) then
 		return
 	end
+	-- Multiplying by the inverse frustum reverts the projection and view matrix transformations.
 	local inverse_frustum = vmath.inv(rendy.cameras[camera_id].frustum)
+	-- Clip coordinates tell us where the screen position is located in the NDC cube, between [-1, 1] on all axes.
+	-- For example, if the screen position is on the left side of the viewport, then its `clip_x` would be -1.
 	local clip_x = (screen_position.x - rendy.cameras[camera_id].viewport_pixel_x) / rendy.cameras[camera_id].viewport_pixel_width * 2 - 1
 	local clip_y = (screen_position.y - rendy.cameras[camera_id].viewport_pixel_y) / rendy.cameras[camera_id].viewport_pixel_height * 2 - 1
+	-- Convert the screen position to (1) a world position on the near plane, and (2) a world position on the far plane.
 	local near_world_position = vmath.vector4(inverse_frustum * vmath.vector4(clip_x, clip_y, -1, 1))
 	local far_world_position = vmath.vector4(inverse_frustum * vmath.vector4(clip_x, clip_y, 1, 1))
+	-- todo
 	near_world_position = near_world_position / near_world_position.w
 	far_world_position = far_world_position / far_world_position.w
+	-- todo
 	local frustum_z = (screen_position.z - rendy.cameras[camera_id].z_min) / (rendy.cameras[camera_id].z_max - rendy.cameras[camera_id].z_min)
 	local world_position = vmath.lerp(frustum_z, near_world_position, far_world_position)
 	return vmath.vector3(world_position.x, world_position.y, world_position.z)

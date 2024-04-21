@@ -82,8 +82,8 @@ local clear_buffers = nil
 -- The GUI camera is not created through `rendy.create_camera()` because:
 -- (1) it is not coupled to a game object,
 -- (2) it does not require the same data fields that a normal camera requires, and
--- (3) it does not and should not support many of the features that a normal camera supports.
--- There is only one GUI camera in existence, it is always active, and it has a unique resize mode that plays well with Defold's GUI component.
+-- (3) it does not support many of the features that a normal camera supports.
+-- There is only one GUI camera in existence, it is always active, and it has a unique resize mode that defers most of the complexity to Defold's GUI component.
 local camera_gui = nil
 
 --------------------------------------------------------------------------------
@@ -102,7 +102,11 @@ local function apply_resize_mode_center(camera)
 	local viewport_fraction_y = camera.viewport_y / rendy.display_height
 	local viewport_fraction_width = camera.viewport_width / rendy.display_width
 	local viewport_fraction_height = camera.viewport_height / rendy.display_height
+	-- Calculate the width of the bars on the left and right sides of the window.
+	-- These bars are only necessary if the window width exceeds its target resolution.
 	local margin_width = window_width_ratio - resolution_width_ratio > 0 and (window_width_ratio - resolution_width_ratio) * rendy.window_height * viewport_fraction_width or 0
+	-- Calculate the height of the bars on the top and bottom sides of the window.
+	-- These bars are only necessary if the window height exceeds its target resolution.
 	local margin_height = window_height_ratio - resolution_height_ratio > 0 and (window_height_ratio - resolution_height_ratio) * rendy.window_width * viewport_fraction_height or 0
 	camera.viewport_pixel_x = rendy.window_width * viewport_fraction_x + margin_width * 0.5
 	camera.viewport_pixel_y = rendy.window_height * viewport_fraction_y + margin_height * 0.5
@@ -175,6 +179,7 @@ end
 
 -- Applies the GUI resize mode to the GUI camera.
 -- This resize mode stretches the camera's viewport and projection to the exact size of the window.
+-- Defold's GUI component handles resize calculations.
 local function apply_resize_mode_gui()
 	camera_gui.viewport_pixel_x = 0
 	camera_gui.viewport_pixel_y = 0
