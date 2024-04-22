@@ -235,12 +235,13 @@ function rendy.screen_to_world(camera_id, screen_position)
 	-- Convert the screen position to (1) a world position on the near plane, and (2) a world position on the far plane.
 	local near_world_position = vmath.vector4(inverse_frustum * vmath.vector4(clip_x, clip_y, -1, 1))
 	local far_world_position = vmath.vector4(inverse_frustum * vmath.vector4(clip_x, clip_y, 1, 1))
-	-- todo
+	-- Remove the homogeneous coordinate.
 	near_world_position = near_world_position / near_world_position.w
 	far_world_position = far_world_position / far_world_position.w
-	-- todo
+	-- Calculate world position's z component between the near and far planes.
 	local frustum_z = (screen_position.z - rendy.cameras[camera_id].z_min) / (rendy.cameras[camera_id].z_max - rendy.cameras[camera_id].z_min)
 	local world_position = vmath.lerp(frustum_z, near_world_position, far_world_position)
+	-- Strip the meaningless w component from the world position.
 	return vmath.vector3(world_position.x, world_position.y, world_position.z)
 end
 
