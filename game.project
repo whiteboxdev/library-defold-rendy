@@ -15,8 +15,8 @@ input_method = HiddenInputField
 [project]
 title = Defold Rendy
 version = 1.0.0
-publisher = Klayton Kowalski
-developer = Klayton Kowalski
+publisher = White Box Dev
+developer = White Box Dev
 
 [input]
 game_binding = /builtins/input/all.input_bindingc
