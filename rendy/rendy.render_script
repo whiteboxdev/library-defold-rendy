@@ -319,7 +319,6 @@ end
 function on_message(self, message_id, message, sender)
 	-- Sent once per frame by each camera.
 	if message_id == message_set_view_projection then
-		pprint(message)
 		set_view_projection_callback(sender, message.view)
 	-- Sent whenever the window size changes.
 	elseif message_id == message_window_resized then
