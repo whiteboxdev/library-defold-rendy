@@ -262,9 +262,9 @@ function init(self)
 	local clear_color = vmath.vector4(clear_color_red, clear_color_green, clear_color_blue, clear_color_alpha)
 	clear_buffers =
 	{
-		[render.BUFFER_COLOR_BIT] = clear_color,
-		[render.BUFFER_DEPTH_BIT] = 1,
-		[render.BUFFER_STENCIL_BIT] = 0
+		[graphics.BUFFER_TYPE_COLOR0_BIT] = clear_color,
+		[graphics.BUFFER_TYPE_DEPTH_BIT] = 1,
+		[graphics.BUFFER_TYPE_STENCIL_BIT] = 0
 	}
 end
 
@@ -273,7 +273,7 @@ function update(self, dt)
 	-- Writing to the color buffer is always enabled.
 	render.set_depth_mask(true)
 	render.set_stencil_mask(0xff)
-	render.set_blend_func(render.BLEND_SRC_ALPHA, render.BLEND_ONE_MINUS_SRC_ALPHA)
+	render.set_blend_func(graphics.BLEND_FACTOR_SRC_ALPHA, graphics.BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
 	-- Write default values to the color, depth, and stencil buffers.
 	render.clear(clear_buffers)
 	-- Render each camera according to its render order.
@@ -287,23 +287,23 @@ function update(self, dt)
 			-- First, render 3D objects.
 			-- Enable depth testing and facing culling to discard non-visible fragments.
 			-- Blending is not supported for 3D objects because Defold does not sort them from back to front, which is a requirement for proper blending.
-			render.enable_state(render.STATE_DEPTH_TEST)
-			render.enable_state(render.STATE_CULL_FACE)
+			render.enable_state(graphics.STATE_DEPTH_TEST)
+			render.enable_state(graphics.STATE_CULL_FACE)
 			render.draw(predicates.model.object, { frustum = camera.frustum })
-			render.disable_state(render.STATE_CULL_FACE)
-			render.disable_state(render.STATE_DEPTH_TEST)
+			render.disable_state(graphics.STATE_CULL_FACE)
+			render.disable_state(graphics.STATE_DEPTH_TEST)
 			render.set_depth_mask(false)
 			-- Second, render 2D objects.
 			-- Disable depth testing because Defold sorts 2D objects by their z positions from back to front.
 			-- Enable blending to support partially transparent objects.
-			render.enable_state(render.STATE_BLEND)
+			render.enable_state(graphics.STATE_BLEND)
 			render.draw(predicates.tile.object, { frustum = camera.frustum })
 			render.draw(predicates.particle.object, { frustum = camera.frustum })
-			render.disable_state(render.STATE_BLEND)
+			render.disable_state(graphics.STATE_BLEND)
 			-- Render debug graphics if enabled in the game.project file.
-			render.enable_state(render.STATE_BLEND)
+			render.enable_state(graphics.STATE_BLEND)
 			render.draw_debug3d()
-			render.disable_state(render.STATE_BLEND)
+			render.disable_state(graphics.STATE_BLEND)
 		end
 	end
 	-- Render the GUI camera on top of all other cameras.
@@ -312,12 +312,12 @@ function update(self, dt)
 	-- Enable stencil testing.
 	activate_camera(camera_gui)
 	render.set_depth_mask(false)
-	render.enable_state(render.STATE_BLEND)
-	render.enable_state(render.STATE_STENCIL_TEST)
+	render.enable_state(graphics.STATE_BLEND)
+	render.enable_state(graphics.STATE_STENCIL_TEST)
 	render.draw(predicates.gui.object)
 	render.draw(predicates.debug_text.object)
-	render.disable_state(render.STATE_STENCIL_TEST)
-	render.disable_state(render.STATE_BLEND)
+	render.disable_state(graphics.STATE_STENCIL_TEST)
+	render.disable_state(graphics.STATE_BLEND)
 end
 
 function on_message(self, message_id, message, sender)
