@@ -300,6 +300,10 @@ function update(self, dt)
 			render.draw(predicates.tile.object, { frustum = camera.frustum })
 			render.draw(predicates.particle.object, { frustum = camera.frustum })
 			render.disable_state(render.STATE_BLEND)
+			-- Render debug graphics if enabled in the game.project file.
+			render.enable_state(render.STATE_BLEND)
+			render.draw_debug3d()
+			render.disable_state(render.STATE_BLEND)
 		end
 	end
 	-- Render the GUI camera on top of all other cameras.
