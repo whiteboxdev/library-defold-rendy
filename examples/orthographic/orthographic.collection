@@ -2,17 +2,6 @@ name: "collection_orthographic"
 instances {
   id: "rendy"
   prototype: "/rendy/rendy.go"
-  position {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
-  }
   component_properties {
     id: "script"
     properties {
@@ -25,11 +14,16 @@ instances {
       value: "540.0"
       type: PROPERTY_TYPE_NUMBER
     }
-  }
-  scale3 {
-    x: 1.0
-    y: 1.0
-    z: 1.0
+    properties {
+      id: "viewport_height"
+      value: "540.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "resolution_height"
+      value: "540.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
   }
 }
 scale_along_z: 0
@@ -38,37 +32,8 @@ embedded_instances {
   data: "components {\n"
   "  id: \"script\"\n"
   "  component: \"/examples/orthographic/orthographic.script\"\n"
-  "  position {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "  }\n"
-  "  rotation {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "    w: 1.0\n"
-  "  }\n"
-  "  property_decls {\n"
-  "  }\n"
   "}\n"
   ""
-  position {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
-  }
-  scale3 {
-    x: 1.0
-    y: 1.0
-    z: 1.0
-  }
 }
 embedded_instances {
   id: "logo"
@@ -77,41 +42,13 @@ embedded_instances {
   "  type: \"sprite\"\n"
   "  data: \"default_animation: \\\"logo_256\\\"\\n"
   "material: \\\"/builtins/materials/sprite.material\\\"\\n"
-  "blend_mode: BLEND_MODE_ALPHA\\n"
   "textures {\\n"
   "  sampler: \\\"texture_sampler\\\"\\n"
   "  texture: \\\"/examples/perspective/perspective.atlas\\\"\\n"
   "}\\n"
   "\"\n"
-  "  position {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "  }\n"
-  "  rotation {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "    w: 1.0\n"
-  "  }\n"
   "}\n"
   ""
-  position {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
-  }
-  scale3 {
-    x: 1.0
-    y: 1.0
-    z: 1.0
-  }
 }
 embedded_instances {
   id: "label"
@@ -121,64 +58,24 @@ embedded_instances {
   "  data: \"size {\\n"
   "  x: 480.0\\n"
   "  y: 64.0\\n"
-  "  z: 0.0\\n"
-  "  w: 0.0\\n"
   "}\\n"
   "color {\\n"
   "  x: 0.0\\n"
   "  y: 0.0\\n"
   "  z: 0.0\\n"
-  "  w: 1.0\\n"
   "}\\n"
-  "outline {\\n"
-  "  x: 0.0\\n"
-  "  y: 0.0\\n"
-  "  z: 0.0\\n"
-  "  w: 1.0\\n"
-  "}\\n"
-  "shadow {\\n"
-  "  x: 0.0\\n"
-  "  y: 0.0\\n"
-  "  z: 0.0\\n"
-  "  w: 1.0\\n"
-  "}\\n"
-  "leading: 1.0\\n"
-  "tracking: 0.0\\n"
-  "pivot: PIVOT_CENTER\\n"
-  "blend_mode: BLEND_MODE_ALPHA\\n"
   "line_break: true\\n"
-  "text: \\\"\\\"\\n"
   "font: \\\"/builtins/fonts/debug/always_on_top.font\\\"\\n"
   "material: \\\"/builtins/fonts/label.material\\\"\\n"
   "\"\n"
-  "  position {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "  }\n"
-  "  rotation {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "    w: 1.0\n"
-  "  }\n"
   "}\n"
   ""
   position {
-    x: 0.0
     y: 202.0
-    z: 0.0
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
   }
   scale3 {
     x: 2.0
     y: 2.0
-    z: 1.0
   }
 }
 embedded_instances {
@@ -188,44 +85,18 @@ embedded_instances {
   "  type: \"sprite\"\n"
   "  data: \"default_animation: \\\"anim\\\"\\n"
   "material: \\\"/builtins/materials/sprite.material\\\"\\n"
-  "blend_mode: BLEND_MODE_ALPHA\\n"
   "textures {\\n"
   "  sampler: \\\"texture_sampler\\\"\\n"
   "  texture: \\\"/builtins/graphics/particle_blob.tilesource\\\"\\n"
   "}\\n"
   "\"\n"
-  "  position {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "  }\n"
-  "  rotation {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "    w: 1.0\n"
-  "  }\n"
   "  scale {\n"
   "    x: 100.0\n"
   "    y: 100.0\n"
-  "    z: 1.0\n"
   "  }\n"
   "}\n"
   ""
   position {
-    x: 0.0
-    y: 0.0
     z: -0.1
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
-  }
-  scale3 {
-    x: 1.0
-    y: 1.0
-    z: 1.0
   }
 }
