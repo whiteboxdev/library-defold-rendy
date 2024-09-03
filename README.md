@@ -4,7 +4,7 @@ Defold Rendy provides a versatile camera suite and render pipeline in a Defold g
 
 Please click the ☆ button on GitHub if this repository is useful or interesting. Thank you!
 
-![thumbnail.png](https://github.com/whiteboxdev/library-defold-rendy/blob/main/assets/images/thumbnail.png?raw=true)
+![thumbnail](https://github.com/user-attachments/assets/b35a1c1d-9c6b-43da-9ff4-64538955070f)
 
 ## Installation
 
@@ -17,7 +17,7 @@ https://github.com/whiteboxdev/library-defold-rendy/archive/main.zip
 
 In the *game.project* file's Bootstrap section, set the active Render component to *rendy.render* file:
 
-![bootstrap](https://github.com/whiteboxdev/library-defold-rendy/assets/70988652/9f6fea97-de67-4938-8730-5ce204f3b526)
+![bootstrap](https://github.com/user-attachments/assets/254ee7b3-10ba-473c-8e0b-69054a93089a)
 
 Rendy provides a pre-packaged *rendy.go* game object that contains a camera component and a script component, which communicate with the *rendy.lua* file and the *rendy.render_script* file. Multiple cameras may be active simultaneously, all with their own projection, viewports, and other properties.
 
@@ -27,7 +27,7 @@ Rendy provides a pre-packaged *rendy.go* game object that contains a camera comp
 
 Let's take a look at the camera's default configuration:
 
-![properties](https://github.com/whiteboxdev/library-defold-rendy/assets/70988652/c7e6a155-40f4-47a9-a441-4adf168e3eef)
+![properties](https://github.com/user-attachments/assets/41f1f460-cbaf-46b5-a994-d1b5d2b38697)
 
 * **Path**, **Id**, and **Url** are all used internally and should not be modified. To differentiate between multiple cameras, change the name of the *rendy.go* game object instead of its internal components.
 * **Active** determines if the camera is rendered to the screen.
@@ -59,15 +59,15 @@ The following images show a window whose width has increased by a couple hundred
 
 **Resize Mode Center** centers the viewport on screen, maintains its aspect ratio, and shows a consistent area of the game world regardless of the viewport size.
 
-![resize_mode_center](https://github.com/whiteboxdev/library-defold-rendy/assets/70988652/7ca5a3bb-1aa1-4487-8abd-30cbb686b98d)
+![resize_mode_center](https://github.com/user-attachments/assets/7e7f7223-b35e-42f8-959d-48140556b6ce)
 
 **Resize Mode Expand** maintains the original size of graphics regardless of the viewport size, and shows more or less of the game world.
 
-![resize_mode_expand](https://github.com/whiteboxdev/library-defold-rendy/assets/70988652/7e6925ac-8a73-477f-a386-1e64137e2922)
+![resize_mode_expand](https://github.com/user-attachments/assets/a54a06d2-1679-45c0-ab6c-516c7f4719ae)
 
 **Resize Mode Stretch** employs no intelligent measures for resizing graphics or the viewport. This leads to graphical stretching when the current viewport size does not match the target resolution.
 
-![resize_mode_stretch](https://github.com/whiteboxdev/library-defold-rendy/assets/70988652/fa4bbabd-37e3-44c3-b497-adb2cc813aad)
+![resize_mode_stretch](https://github.com/user-attachments/assets/3b34b4d4-37d2-4b94-9482-3daf0428717e)
 
 ---
 
@@ -91,7 +91,7 @@ Shaking the camera is a widely loved feature by developers and players alike. It
 rendy.shake(hash("/my_rendy_object"), radius = 200, intensity = 10, duration = 2 [, scaler = 0.75])
 ```
 
-![shake](https://github.com/whiteboxdev/library-defold-rendy/assets/70988652/4927285a-100d-4f45-9604-fe1522c315e0)
+![shake](https://github.com/user-attachments/assets/dc23a264-698e-47cd-9073-4706b0cc3aac)
 
 The camera moves `radius` units in random directions, ping-pongs between its original position and radius-defined position `intensity` times, over a period of `duration` seconds, where each ping-pong distance is multiplied by `scaler`. This optional scaler value is what allows the shake to "calm down" and come to a smooth finish.
 
