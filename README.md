@@ -1,5 +1,7 @@
 # Defold Rendy
 
+**Note: I'm no longer active on this account, and therefore will not be maintaining or contributing to this project in the future. Please try the [Shutter](https://github.com/Klaleus/defold-shutter) library instead. It offers everything Rendy offers, but does it in a much cleaner and more contribution-friendly way.**
+
 Defold Rendy provides a versatile camera suite and render pipeline in a Defold game engine project.
 
 Please click the ☆ button on GitHub if this repository is useful or interesting. Thank you!
